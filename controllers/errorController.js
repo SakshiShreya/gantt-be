@@ -1,8 +1,11 @@
-import { NextFunction, Request, Response } from "express";
-import { CastError, Error } from "mongoose";
-import AppError from "../utils/appError";
+import AppError from "../utils/appError.js";
 
-function sendErrorForDev(err: AppError, res: Response) {
+/**
+ * Function to show error message in development environment
+ * @param {AppError} err error object
+ * @param {Express.Response} res response object
+ */
+function sendErrorForDev(err, res) {
   res.status(err.statusCode).json({
     status: err.status,
     message: err.message,
@@ -13,10 +16,10 @@ function sendErrorForDev(err: AppError, res: Response) {
 
 /**
  * if _id string format is wrong and mongo is having trouble casting it to ObjectId
- * @param err Error object
+ * @param {import("mongoose").CastError} err Error object
  * @returns new AppError object
  */
-function handleCastError(err: CastError) {
+function handleCastError(err) {
   const message = `Invalid ${err.path}: ${err.value}.`;
   return new AppError(message, 400);
 }
@@ -26,17 +29,17 @@ function handleCastError(err: CastError) {
  * @param err Error object
  * @returns new AppError object
  */
-function handleDuplicateFields(err: any) {
+function handleDuplicateFields(err) {
   const message = `Duplicate field value ${err.keyValue.name}. Please use another value.`;
   return new AppError(message, 400);
 }
 
 /**
  * If any field is invalid
- * @param err Error object
+ * @param {import("mongoose").Error.ValidationError} err Error object
  * @returns new AppError object
  */
-function handleValidationError(err: Error.ValidationError) {
+function handleValidationError(err) {
   return new AppError(err.message, 400);
 }
 
@@ -56,7 +59,12 @@ function handleJwtExpiredError() {
   new AppError('Your token has expired. Please login again', 401);
 }
 
-function sendErrorForProd(err: AppError, res: Response) {
+/**
+ * Function to show error message in production environment
+ * @param {AppError} err error object
+ * @param {Express.Response} res response object
+ */
+function sendErrorForProd(err, res) {
   if (err.isOperational) {
     return res.status(err.statusCode).json({
       status: err.status,
@@ -75,7 +83,14 @@ function sendErrorForProd(err: AppError, res: Response) {
   });
 }
 
-export default (err: any, req: Request, res: Response, next: NextFunction) => {
+/**
+ * handles all errors even if missed by any controller
+ * @param {*} err error object
+ * @param {Express.Request} req request object
+ * @param {Express.Response} res response object
+ * @param {Express.NextFunction} next next function
+ */
+export default function errorController (err, req, res, next) {
   err.statusCode = err.statusCode || 500;
   err.status = err.status || "error";
 
