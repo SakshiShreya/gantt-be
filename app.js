@@ -1,7 +1,7 @@
 import express from "express";
 import morgan from "morgan";
-import AppError from "./utils/appError";
-import globalErrorHandler from "./controllers/errorController.js";
+import AppError from "./utils/appError.js";
+import errorController from "./controllers/errorController.js";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import ExpressMongoSanitize from "express-mongo-sanitize";
@@ -13,7 +13,7 @@ const app = express();
 // adds security headers
 app.use(helmet());
 
-// Logging
+// Logging (only here because heroku has its own logging on prod)
 if (process.env.NODE_ENV === "development") {
   app.use(morgan("dev"));
 }
@@ -53,6 +53,6 @@ app.all("*", (req, res, next) => {
   next(new AppError(`Can't find ${req.originalUrl} on this server`, 404));
 });
 
-app.use(globalErrorHandler);
+app.use(errorController);
 
 export default app;
