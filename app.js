@@ -1,12 +1,12 @@
 import express from "express";
 import morgan from "morgan";
-import AppError from "./utils/appError.js";
-import errorController from "./controllers/errorController.js";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import ExpressMongoSanitize from "express-mongo-sanitize";
 import xss from "xss-clean";
 import hpp from "hpp";
+import AppError from "./utils/appError.js";
+import errorController from "./controllers/errorController.js";
 
 const app = express();
 
@@ -22,7 +22,7 @@ if (process.env.NODE_ENV === "development") {
 const limiter = rateLimit({
   max: 100,
   windowMs: 60 * 60 * 1000, // 1 hour window
-  message: "Too many requests from this IP. Please try again in an hour"
+  message: "Too many requests from this IP. Please try again in an hour",
 });
 app.use("/api", limiter);
 
@@ -40,8 +40,8 @@ app.use(xss());
 // eg: /api/v1/users?search=a&search=b will only search for b
 app.use(
   hpp({
-    whitelist: [] // these params can be present twice
-  })
+    whitelist: [], // these params can be present twice
+  }),
 );
 
 app.get("/", (req, res) => {

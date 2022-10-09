@@ -1,6 +1,6 @@
 class AppError extends Error {
   /**
-   * 
+   *
    * @param {string} message message of the error
    * @param {number} statusCode status code of the error
    */

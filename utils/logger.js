@@ -7,11 +7,11 @@ export const Type = {
   http: "http",
   verbose: "verbose",
   debug: "debug",
-  silly: "silly"
-}
+  silly: "silly",
+};
 
 /**
- * 
+ *
  * @param {object} params - Log parameters
  * @param {number} params.code - HTTP status code
  * @param {string} params.description - description of the error
@@ -36,11 +36,12 @@ export default function nodeLogger(params) {
     file,
     method,
     line,
-    ts: new Date().toISOString()
+    ts: new Date().toISOString(),
   };
 
   // so that logging is done once process is free
   setTimeout(() => {
+    // eslint-disable-next-line no-console
     console.log(JSON.stringify(logData));
   }, 0);
 }

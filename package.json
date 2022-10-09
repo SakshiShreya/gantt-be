@@ -1,12 +1,16 @@
 {
   "name": "gantt-be",
   "version": "1.0.0",
-  "description": "",
+  "description": "Backend for Gantt",
   "main": "server.js",
   "scripts": {
     "dev": "nodemon server.js",
     "start": "set NODE_ENV=production&& node server.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 0",
+    "prepare": "husky install",
+    "pre-commit": "lint-staged",
+    "lint": "eslint .",
+    "lint:fix": "eslint --fix --ext .js,.jsx ."
   },
   "repository": {
     "type": "git",
@@ -18,6 +22,9 @@
     "url": "https://github.com/SakshiShreya/gantt-be/issues"
   },
   "homepage": "https://github.com/SakshiShreya/gantt-be#readme",
+  "engines": {
+    "node": ">=16.0.0"
+  },
   "dependencies": {
     "chalk": "^5.0.1",
     "dotenv": "^16.0.1",
@@ -26,13 +33,19 @@
     "express-rate-limit": "^6.5.1",
     "helmet": "^5.1.1",
     "hpp": "^0.2.3",
+    "lint-staged": "^13.0.3",
     "mongoose": "^6.5.2",
     "morgan": "^1.10.0",
     "stack-trace": "^1.0.0-pre1",
     "xss-clean": "^0.1.1"
   },
   "devDependencies": {
-    "nodemon": "^2.0.19"
+    "eslint": "^8.25.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-plugin-node": "^11.1.0",
+    "husky": "^8.0.1",
+    "nodemon": "^2.0.19",
+    "prettier": "^2.7.1"
   },
   "type": "module"
 }

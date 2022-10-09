@@ -1,4 +1,5 @@
 import AppError from "../utils/appError.js";
+import nodeLogger, { Type } from "../utils/logger.js";
 
 /**
  * Function to show error message in development environment
@@ -10,7 +11,7 @@ function sendErrorForDev(err, res) {
     status: err.status,
     message: err.message,
     stack: err.stack,
-    error: err
+    error: err,
   });
 }
 
@@ -56,7 +57,7 @@ function handleJwtError() {
  * @returns new AppError object
  */
 function handleJwtExpiredError() {
-  new AppError('Your token has expired. Please login again', 401);
+  return new AppError("Your token has expired. Please login again", 401);
 }
 
 /**
@@ -68,18 +69,22 @@ function sendErrorForProd(err, res) {
   if (err.isOperational) {
     return res.status(err.statusCode).json({
       status: err.status,
-      message: err.message
+      message: err.message,
     });
   }
 
   // if programming error, don't leak error details
-  // 1. Log error TODO: Use a logger here
-  console.error("Error: ", err);
+  // 1. Log error
+  nodeLogger({
+    description: `Error: ${err}`,
+    type: Type.error,
+    ref: err,
+  });
 
   // 2. Send generic message
   res.status(500).json({
     status: "error",
-    message: "Something went very wrong"
+    message: "Something went very wrong",
   });
 }
 
@@ -90,11 +95,11 @@ function sendErrorForProd(err, res) {
  * @param {Express.Response} res response object
  * @param {Express.NextFunction} next next function
  */
-export default function errorController (err, req, res, next) {
+export default function errorController(err, req, res, next) {
   err.statusCode = err.statusCode || 500;
   err.status = err.status || "error";
 
-  if ((process.env.NODE_ENV = "development")) {
+  if (process.env.NODE_ENV === "development") {
     sendErrorForDev(err, res);
   } else if (process.env.NODE_ENV === "production") {
     let error = { ...err };
@@ -106,16 +111,16 @@ export default function errorController (err, req, res, next) {
     if (err.code === 11000) {
       error = handleDuplicateFields(error);
     }
-    if (err.name === 'ValidationError') {
+    if (err.name === "ValidationError") {
       error = handleValidationError(error);
     }
-    if (err.name === 'JsonWebTokenError') {
+    if (err.name === "JsonWebTokenError") {
       error = handleJwtError();
     }
-    if (err.name === 'TokenExpiredError') {
+    if (err.name === "TokenExpiredError") {
       error = handleJwtExpiredError();
     }
 
     sendErrorForProd(err, res);
   }
-};
+}
