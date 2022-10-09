@@ -2,16 +2,19 @@ import express from "express";
 import morgan from "morgan";
 import AppError from "./utils/appError.js";
 import errorController from "./controllers/errorController.js";
-import helmet from "helmet";
+// import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import ExpressMongoSanitize from "express-mongo-sanitize";
 import xss from "xss-clean";
 import hpp from "hpp";
+import schema from "./schema/index.js";
+import { graphqlHTTP } from "express-graphql";
 
 const app = express();
 
-// adds security headers
-app.use(helmet());
+// TODO: THIS IS NOT WORKING WITH GRAPHQL
+// // adds security headers
+// app.use(helmet());
 
 // Logging (only here because heroku has its own logging on prod)
 if (process.env.NODE_ENV === "development") {
@@ -44,6 +47,7 @@ app.use(
   })
 );
 
+app.use("/graphql", graphqlHTTP({ schema, graphiql: true }));
 app.get("/", (req, res) => {
   res.send("Hello World!");
 });
