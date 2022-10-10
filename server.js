@@ -1,7 +1,6 @@
 import dotenv from "dotenv";
 import mongoose from "mongoose";
 import nodeLogger, { Type } from "./utils/logger.js";
-import chalk from "chalk";
 
 process.on("uncaughtException", err => {
   nodeLogger({
@@ -29,7 +28,7 @@ mongoose.connect(DB, {}).then(() => {
 const PORT = process.env.PORT || 8000;
 const server = app.listen(PORT, () => {
   nodeLogger({
-    description: "App listening on port" + PORT,
+    description: "App listening on port " + PORT,
     type: Type.info,
     ref: {}
   });
