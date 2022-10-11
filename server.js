@@ -1,6 +1,6 @@
 import dotenv from "dotenv";
 import mongoose from "mongoose";
-import nodeLogger, { Type } from "./utils/logger.js";
+import nodeLogger, { Type } from "./src/utils/logger.js";
 
 process.on("uncaughtException", (err) => {
   nodeLogger({

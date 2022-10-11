@@ -1,5 +1,5 @@
-import AppError from "../utils/appError.js";
-import nodeLogger, { Type } from "../utils/logger.js";
+import AppError from "../../utils/appError.js";
+import nodeLogger, { Type } from "../../utils/logger.js";
 
 /**
  * Function to show error message in development environment

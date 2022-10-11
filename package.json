@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "nodemon server.js",
     "start": "set NODE_ENV=production&& node server.js",
-    "test": "echo \"Error: no test specified\" && exit 0",
+    "test": "mocha 'src/**/*.spec.js' --timeout 10000 || true",
     "prepare": "husky install",
     "pre-commit": "lint-staged",
     "lint": "eslint .",
@@ -42,10 +42,13 @@
     "xss-clean": "^0.1.1"
   },
   "devDependencies": {
-    "eslint": "^8.25.0",
+    "chai-http": "^4.3.0",
+    "chai": "^4.3.6",
     "eslint-config-airbnb-base": "^15.0.0",
     "eslint-plugin-node": "^11.1.0",
+    "eslint": "^8.25.0",
     "husky": "^8.0.1",
+    "mocha": "^10.0.0",
     "nodemon": "^2.0.19",
     "prettier": "^2.7.1"
   },
