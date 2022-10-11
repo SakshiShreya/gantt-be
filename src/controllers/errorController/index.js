@@ -1,4 +1,4 @@
-import AppError from "../utils/appError.js";
+import AppError from "../../utils/appError.js";
 
 /**
  * Function to show error message in development environment

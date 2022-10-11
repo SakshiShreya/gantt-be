@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "nodemon server.js",
     "start": "set NODE_ENV=production&& node server.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha 'src/**/*.spec.js' --timeout 10000 || true"
   },
   "repository": {
     "type": "git",
@@ -34,6 +34,9 @@
     "xss-clean": "^0.1.1"
   },
   "devDependencies": {
+    "chai": "^4.3.6",
+    "chai-http": "^4.3.0",
+    "mocha": "^10.0.0",
     "nodemon": "^2.0.19"
   },
   "type": "module"
