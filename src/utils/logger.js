@@ -18,7 +18,7 @@ export const Type = {
  * @param {Type} params.type - type of the error
  * @param {object} params.ref - Log references
  */
-export default function nodeLogger(params) {
+export default function logger(params) {
   const rawParams = JSON.parse(JSON.stringify(params));
 
   const trace = stackTrace.get()[1];

@@ -7,7 +7,7 @@ import xss from "xss-clean";
 import hpp from "hpp";
 import { graphqlHTTP } from "express-graphql";
 import AppError from "./src/utils/appError.js";
-import errorController from "./src/controllers/errorController/index.js";
+import { errorController } from "./src/controllers/errorController/index.js";
 import schema from "./src/schema/index.js";
 
 const app = express();

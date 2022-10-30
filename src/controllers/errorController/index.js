@@ -1,5 +1,6 @@
+import { GraphQLError } from "graphql";
 import AppError from "../../utils/appError.js";
-import nodeLogger, { Type } from "../../utils/logger.js";
+import logger, { Type } from "../../utils/logger.js";
 
 /**
  * Function to show error message in development environment
@@ -75,7 +76,7 @@ function sendErrorForProd(err, res) {
 
   // if programming error, don't leak error details
   // 1. Log error
-  nodeLogger({
+  logger({
     description: `Error: ${err}`,
     type: Type.error,
     ref: err,
@@ -89,38 +90,68 @@ function sendErrorForProd(err, res) {
 }
 
 /**
+ * handles mongo errors
+ * @param {*} err error object
+ * @returns modified error object based on mongo error
+ */
+function handleMongoError(err) {
+  let error = { ...err };
+  if (error.name === "CastError") {
+    error = handleCastError(error);
+  }
+  if (err.code === 11000) {
+    error = handleDuplicateFields(error);
+  }
+  if (err.name === "ValidationError") {
+    error = handleValidationError(error);
+  }
+  if (err.name === "JsonWebTokenError") {
+    error = handleJwtError();
+  }
+  if (err.name === "TokenExpiredError") {
+    error = handleJwtExpiredError();
+  }
+
+  return error;
+}
+
+/**
  * handles all errors even if missed by any controller
  * @param {*} err error object
  * @param {Express.Request} req request object
  * @param {Express.Response} res response object
  * @param {Express.NextFunction} next next function
  */
-export default function errorController(err, req, res, next) {
+export function errorController(err, req, res, next) {
   err.statusCode = err.statusCode || 500;
   err.status = err.status || "error";
 
   if (process.env.NODE_ENV === "development") {
     sendErrorForDev(err, res);
   } else if (process.env.NODE_ENV === "production") {
-    let error = { ...err };
-
-    // MongoDB specific errors
-    if (error.name === "CastError") {
-      error = handleCastError(error);
-    }
-    if (err.code === 11000) {
-      error = handleDuplicateFields(error);
-    }
-    if (err.name === "ValidationError") {
-      error = handleValidationError(error);
-    }
-    if (err.name === "JsonWebTokenError") {
-      error = handleJwtError();
-    }
-    if (err.name === "TokenExpiredError") {
-      error = handleJwtExpiredError();
-    }
-
-    sendErrorForProd(err, res);
+    const error = handleMongoError(err);
+    sendErrorForProd(error, res);
   }
+}
+
+/**
+ * returns error message if graphql query is invalid
+ * @param {*} err error object
+ * @returns GraphQl error object
+ */
+export default function getGraphQLError(err) {
+  err.statusCode = err.statusCode || 500;
+  err.status = err.status || "error";
+
+  const error = handleMongoError(err);
+
+  logger({
+    description: `Error: ${error}`,
+    type: Type.error,
+    ref: error,
+  });
+
+  return new GraphQLError(err, null, null, null, null, err, {
+    name: err.name,
+  });
 }

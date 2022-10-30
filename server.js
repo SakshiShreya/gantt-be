@@ -1,9 +1,9 @@
 import dotenv from "dotenv";
 import mongoose from "mongoose";
-import nodeLogger, { Type } from "./src/utils/logger.js";
+import logger, { Type } from "./src/utils/logger.js";
 
 process.on("uncaughtException", (err) => {
-  nodeLogger({
+  logger({
     description: "Uncaught Exception. Shutting down...",
     type: Type.error,
     ref: err,
@@ -22,7 +22,7 @@ const DB = process.env.DB.replace(
   process.env.DB_PASSWORD,
 ).replace("<USERNAME>", process.env.DB_USERNAME);
 mongoose.connect(DB, {}).then(() => {
-  nodeLogger({
+  logger({
     description: "DB connection successful",
     type: Type.info,
     ref: {},
@@ -31,7 +31,7 @@ mongoose.connect(DB, {}).then(() => {
 
 const PORT = process.env.PORT || 8000;
 const server = app.listen(PORT, () => {
-  nodeLogger({
+  logger({
     description: `App listening on port ${PORT}`,
     type: Type.info,
     ref: {},
@@ -39,7 +39,7 @@ const server = app.listen(PORT, () => {
 });
 
 process.on("unhandledRejection", (err) => {
-  nodeLogger({
+  logger({
     code: 500,
     description: "Unhandled Rejection. Shutting down...",
     type: Type.error,

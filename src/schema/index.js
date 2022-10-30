@@ -1,20 +1,21 @@
 import { GraphQLObjectType, GraphQLSchema } from "graphql";
 import {
-  getAllProjects,
+  getProjects,
   createProject,
+  updateProject,
   deleteProject,
 } from "./projectSchema.js";
 
 const RootQuery = new GraphQLObjectType({
   name: "RootQuery",
   fields: {
-    getAllProjects,
+    getProjects,
   },
 });
 
 const Mutation = new GraphQLObjectType({
   name: "Mutation",
-  fields: { createProject, deleteProject },
+  fields: { createProject, updateProject, deleteProject },
 });
 
 export default new GraphQLSchema({ query: RootQuery, mutation: Mutation });
