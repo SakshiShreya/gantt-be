@@ -18,6 +18,7 @@
     "prefer-destructuring": ["error", { "object": true, "array": false }],
     "quotes": ["error", "double", { "allowTemplateLiterals": true }],
     "spaced-comment": "off",
-    "node/no-unpublished-import": ["error", { "allowModules": ["chai", "chai-http", "mocha"] }]
+    "node/no-unpublished-import": ["error", { "allowModules": ["chai", "chai-http", "mocha"] }],
+    "object-curly-newline": ["error", { "consistent": true }]
   }
 }

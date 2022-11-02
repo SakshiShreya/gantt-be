@@ -1,24 +1,9 @@
-import {
-  GraphQLID,
-  GraphQLList,
-  GraphQLNonNull,
-  GraphQLObjectType,
-  GraphQLString,
-} from "graphql";
+import { GraphQLID, GraphQLList, GraphQLNonNull, GraphQLString } from "graphql";
 import getGraphQLError from "../controllers/errorController/index.js";
 import Project from "../models/projectModel.js";
-
-const ProjectType = new GraphQLObjectType({
-  name: "Project",
-  fields: () => ({
-    id: { type: GraphQLID, description: "Id of the project" },
-    name: { type: GraphQLString, description: "Name of the project" },
-    description: {
-      type: GraphQLString,
-      description: "Description of the project",
-    },
-  }),
-});
+import { description } from "./constants.js";
+import { DateType, DurationInputType } from "./dataTypes/helperTypes.js";
+import ProjectType from "./dataTypes/project.js";
 
 // CRUD APIS FOR PROJECTS
 export const createProject = {
@@ -27,17 +12,49 @@ export const createProject = {
   args: {
     name: {
       type: new GraphQLNonNull(GraphQLString),
-      description: "Name of the project",
+      description: description.name,
     },
-    description: {
+    desc: {
       type: GraphQLString,
-      description: "Description of the project",
+      description: description.desc,
+    },
+    startDate: {
+      type: new GraphQLNonNull(DateType),
+      description: description.startDate,
+    },
+    duration: {
+      type: new GraphQLNonNull(DurationInputType),
+      description: description.duration,
     },
   },
-  resolve(parent, args) {
+  async resolve(parent, args) {
     try {
-      const { name, description } = args;
-      return Project.create({ name, description });
+      const { name, desc, startDate, duration } = args;
+      let projectID = name.replace(/\s/g, "").slice(0, 3).toUpperCase();
+
+      // get the latest project that has the same projectID
+      const duplicateProject = await Project.find(
+        { projectID: { $regex: `^${projectID}`, $options: "i" } },
+        { projectID: 1 },
+      )
+        .sort({ _id: -1 })
+        .limit(1)
+        .exec();
+
+      if (duplicateProject.length) {
+        const lastProjectID = duplicateProject[0].projectID;
+        const lastProjectIDNumber = Number(lastProjectID.slice(3));
+        projectID = `${projectID}${lastProjectIDNumber + 1}`;
+      }
+
+      return Project.create({
+        projectID,
+        name,
+        desc,
+        startDate,
+        duration,
+        createdBy: "admin",
+      });
     } catch (err) {
       return getGraphQLError(err);
     }
@@ -48,10 +65,9 @@ export const getProjects = {
   type: new GraphQLList(ProjectType),
   description: "Get one or more projects",
   args: {
-    id: {
+    _id: {
       type: GraphQLID,
-      description:
-        "ID of the project, pass only if needed to filter on any of the keys, e.g. (_id: 'shjdfjsdj5435')",
+      desc: `${description.id}, pass only if needed to filter on any of the keys, e.g. (_id: 'shjdfjsdj5435')`,
     },
   },
   resolve(parent, args) {
@@ -67,20 +83,20 @@ export const updateProject = {
   type: ProjectType,
   description: "Update a project",
   args: {
-    id: {
+    _id: {
       type: new GraphQLNonNull(GraphQLID),
-      description: "ID of the project, used to find the project to be updated.",
+      description: `${description.id}, used to find the project to be updated.`,
     },
-    name: { type: GraphQLString, description: "Name of the project" },
-    description: {
+    name: { type: GraphQLString, description: description.name },
+    desc: {
       type: GraphQLString,
-      description: "Description of the project",
+      description: description.desc,
     },
   },
   resolve(parent, args) {
     try {
-      const { id, name, description } = args;
-      return Project.findByIdAndUpdate(id, { name, description });
+      const { _id, name, desc } = args;
+      return Project.findByIdAndUpdate(_id, { name, desc });
     } catch (err) {
       return getGraphQLError(err);
     }
@@ -91,9 +107,9 @@ export const deleteProject = {
   type: ProjectType,
   description: "Delete a project",
   args: {
-    id: {
+    _id: {
       type: new GraphQLNonNull(GraphQLID),
-      description: "ID of the project, used to find the project to be deleted",
+      description: `${description.id}, used to find the project to be deleted`,
     },
   },
   resolve: async (parent, args) => {
