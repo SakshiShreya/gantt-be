@@ -1,9 +1,9 @@
 import { GraphQLID, GraphQLList, GraphQLNonNull, GraphQLString } from "graphql";
-import getGraphQLError from "../controllers/errorController/index.js";
-import Project from "../models/projectModel.js";
-import { description } from "./constants.js";
-import { DateType, DurationInputType } from "./dataTypes/helperTypes.js";
-import ProjectType from "./dataTypes/project.js";
+import getGraphQLError from "../../controllers/errorController/index.js";
+import Project from "../../models/projectModel.js";
+import { description } from "../constants.js";
+import { DateType, DurationInputType } from "../dataTypes/helperTypes.js";
+import ProjectType from "../dataTypes/project.js";
 
 // CRUD APIS FOR PROJECTS
 export const createProject = {

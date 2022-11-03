@@ -4,7 +4,7 @@ import {
   createProject,
   updateProject,
   deleteProject,
-} from "./projectSchema.js";
+} from "./project/project.js";
 
 const RootQuery = new GraphQLObjectType({
   name: "RootQuery",
