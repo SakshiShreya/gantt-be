@@ -20,7 +20,7 @@ export const createProject = {
     },
     startDate: {
       type: new GraphQLNonNull(DateType),
-      description: description.startDate,
+      description: description.scheduledStartDate,
     },
     status: {
       type: StatusInputType,
@@ -55,7 +55,7 @@ export const createProject = {
         projectID,
         name,
         desc,
-        startDate,
+        scheduledStartDate: startDate,
         createdBy: "admin",
         status,
         address,
