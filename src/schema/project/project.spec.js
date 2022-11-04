@@ -7,32 +7,9 @@ import Project from "../../models/projectModel.js";
 chai.use(chaiHttp);
 
 describe("Test Projects apis", () => {
-  // beforeEach(() => {
-  //   // create 3 projects
-  //   const query1 = `mutation{
-  //     createProject(name: "Project 1", startDate: "20 Nov,
-  // 2022", duration: {amount: 5, unit: days}) {
-  //       id, name
-  //     }
-  //   }`;
-  //   const query2 = `mutation{
-  //     createProject(name: "Project 2", startDate: "20 Nov,
-  // 2022", duration: {amount: 5, unit: days}) {
-  //       id, name
-  //     }
-  //   }`;
-  //   const query3 = `mutation{
-  //     createProject(name: "Test Project", startDate: "20 Nov,
-  // 2022", duration: {amount: 5, unit: days}) {
-  //       id, name
-  //     }
-  //   }`;
-  //   chai.request(server)
-  // });
-
   describe("Test CREATE Functionality", () => {
     const testProject = `mutation{
-      createProject(name: "Test Project", startDate: "20 Nov, 2022", duration: {amount: 5, unit: days}) {
+      createProject(name: "Test Project", startDate: "20 Nov, 2022", duration: {amount: 5, unit: days}, address: {address1: "Test Address 1", city: "Bangalore", state: "KARNATAKA", pinCode: 560093}) {
         id, name, projectID
       }
     }`;
@@ -56,11 +33,7 @@ describe("Test Projects apis", () => {
             res.body.data.createProject.name,
             "Project name should be present",
           );
-          assert.equal(
-            res.body.data.createProject.name,
-            "Test Project",
-            "Project name should be Test Project",
-          );
+          assert.equal(res.body.data.createProject.name, "Test Project");
           done();
         });
     });

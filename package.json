@@ -36,6 +36,7 @@
     "graphql": "^15.8.0",
     "helmet": "^5.1.1",
     "hpp": "^0.2.3",
+    "india-pincode-lookup": "^1.0.3",
     "lint-staged": "^13.0.3",
     "mongoose": "^6.5.2",
     "morgan": "^1.10.0",

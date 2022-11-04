@@ -5,12 +5,11 @@ import {
   updateProject,
   deleteProject,
 } from "./project/project.js";
+import pinCodeToAddress from "./helperApis/pinCodeToAddress/pinCodeToAddress.js";
 
 const RootQuery = new GraphQLObjectType({
   name: "RootQuery",
-  fields: {
-    getProjects,
-  },
+  fields: { getProjects, pinCodeToAddress },
 });
 
 const Mutation = new GraphQLObjectType({

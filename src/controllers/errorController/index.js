@@ -146,12 +146,13 @@ export default function getGraphQLError(err) {
   const error = handleMongoError(err);
 
   logger({
-    description: `Error: ${error}`,
+    description: `Error: ${err}`,
     type: Type.error,
     ref: error,
   });
 
   return new GraphQLError(err, null, null, null, null, err, {
     name: err.name,
+    message: err.message,
   });
 }

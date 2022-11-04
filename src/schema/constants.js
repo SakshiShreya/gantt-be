@@ -7,7 +7,9 @@ export const description = {
   createdBy: "User who created the project",
   startDate: "Date when the project started",
   endDate: "Date when the project ends",
-  duration: "Duration of the Project",
+  duration: "Duration of the Project in hours or days",
+  status: "Status of the project (scheduled, inProgress, delayed, completed, onHold)",
+  address: "Address of the project",
 };
 
 export default { description };
