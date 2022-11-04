@@ -24,7 +24,8 @@ const projectSchema = new mongoose.Schema({
   status: {
     type: String,
     required: [true, "A project must have a status"],
-    enum: ["scheduled", "inProgress", "delayed", "completed", "onHold"],
+    // mongo stores only user defined statuses, other statuses are calculated
+    enum: ["scheduled", "started", "closed", "onHold"],
     default: "scheduled",
   },
   address: {

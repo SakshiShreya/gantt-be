@@ -7,7 +7,7 @@ export const description = {
   createdBy: "User who created the project",
   startDate: "Date when the project started",
   endDate: "Date when the project ends",
-  status: "Status of the project (scheduled, inProgress, delayed, completed, onHold)",
+  status: "Status of the project (scheduled, inProgress, delayed, completed, closed, onHold)",
   address: "Address of the project",
 };
 

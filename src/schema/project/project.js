@@ -2,7 +2,7 @@ import { GraphQLID, GraphQLList, GraphQLNonNull, GraphQLString } from "graphql";
 import getGraphQLError from "../../controllers/errorController/index.js";
 import Project from "../../models/projectModel.js";
 import { description } from "../constants.js";
-import { AddressInputType, DateType, StatusType } from "../dataTypes/helperTypes.js";
+import { AddressInputType, DateType, StatusInputType } from "../dataTypes/helperTypes.js";
 import ProjectType from "../dataTypes/project.js";
 
 // CRUD APIS FOR PROJECTS
@@ -23,7 +23,7 @@ export const createProject = {
       description: description.startDate,
     },
     status: {
-      type: StatusType,
+      type: StatusInputType,
       description: description.status,
     },
     address: {

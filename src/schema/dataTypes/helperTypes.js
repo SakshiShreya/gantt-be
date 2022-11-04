@@ -25,12 +25,23 @@ export const DateType = new GraphQLScalarType({
   parseLiteral: (ast) => dateValue(ast.value),
 });
 
-export const StatusType = new GraphQLEnumType({
-  name: "Status",
+export const StatusOutputType = new GraphQLEnumType({
+  name: "StatusOutput",
   values: {
     scheduled: { value: "scheduled" },
     inProgress: { value: "inProgress" },
     delayed: { value: "delayed" },
+    closed: { value: "closed" },
+    completed: { value: "completed" },
+    onHold: { value: "onHold" },
+  },
+});
+
+export const StatusInputType = new GraphQLEnumType({
+  name: "StatusInput",
+  values: {
+    scheduled: { value: "scheduled" },
+    started: { value: "started" },
     closed: { value: "closed" },
     onHold: { value: "onHold" },
   },
