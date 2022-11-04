@@ -9,7 +9,7 @@ chai.use(chaiHttp);
 describe("Test Projects apis", () => {
   describe("Test CREATE Functionality", () => {
     const testProject = `mutation{
-      createProject(name: "Test Project", startDate: "20 Nov, 2022", duration: {amount: 5, unit: days}, address: {address1: "Test Address 1", city: "Bangalore", state: "KARNATAKA", pinCode: 560093}) {
+      createProject(name: "Test Project", startDate: "20 Nov, 2022", address: {address1: "Test Address 1", city: "Bangalore", state: "KARNATAKA", pinCode: 560093}) {
         id, name, projectID
       }
     }`;

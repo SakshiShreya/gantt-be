@@ -5,7 +5,7 @@ import {
   GraphQLString,
 } from "graphql";
 import { description } from "../constants.js";
-import { AddressType, DateType, DurationType, StatusType } from "./helperTypes.js";
+import { AddressType, DateType, StatusType } from "./helperTypes.js";
 
 const ProjectType = new GraphQLObjectType({
   name: "Project",
@@ -41,10 +41,6 @@ const ProjectType = new GraphQLObjectType({
     endDate: {
       type: new GraphQLNonNull(DateType),
       description: description.endDate,
-    },
-    duration: {
-      type: new GraphQLNonNull(DurationType),
-      description: description.duration,
     },
     status: {
       type: new GraphQLNonNull(StatusType),

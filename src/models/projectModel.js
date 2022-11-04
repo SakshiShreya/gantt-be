@@ -1,6 +1,6 @@
 import { add } from "date-fns";
 import mongoose from "mongoose";
-import { addressSchema, durationSchema } from "./helper.js";
+import { addressSchema } from "./helper.js";
 
 const projectSchema = new mongoose.Schema({
   projectID: { type: String, required: true, unique: true },
@@ -21,10 +21,6 @@ const projectSchema = new mongoose.Schema({
     type: Date,
     required: [true, "A project must have a start date"],
   },
-  duration: {
-    type: durationSchema,
-    required: [true, "A project must have a duration"],
-  },
   status: {
     type: String,
     required: [true, "A project must have a status"],
@@ -38,11 +34,10 @@ const projectSchema = new mongoose.Schema({
 });
 
 projectSchema.virtual("endDate").get(function () {
-  const {
-    startDate,
-    duration: { amount, unit },
-  } = this;
-  return add(new Date(startDate), { [unit]: amount });
+  const { startDate } = this;
+
+  // This is just a temporary logic until project details are added
+  return add(new Date(startDate), { months: 1 });
 });
 
 const Project = mongoose.model("Project", projectSchema);

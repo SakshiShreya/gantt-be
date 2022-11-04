@@ -2,7 +2,7 @@ import { GraphQLID, GraphQLList, GraphQLNonNull, GraphQLString } from "graphql";
 import getGraphQLError from "../../controllers/errorController/index.js";
 import Project from "../../models/projectModel.js";
 import { description } from "../constants.js";
-import { AddressInputType, DateType, DurationInputType, StatusType } from "../dataTypes/helperTypes.js";
+import { AddressInputType, DateType, StatusType } from "../dataTypes/helperTypes.js";
 import ProjectType from "../dataTypes/project.js";
 
 // CRUD APIS FOR PROJECTS
@@ -22,10 +22,6 @@ export const createProject = {
       type: new GraphQLNonNull(DateType),
       description: description.startDate,
     },
-    duration: {
-      type: new GraphQLNonNull(DurationInputType),
-      description: description.duration,
-    },
     status: {
       type: StatusType,
       description: description.status,
@@ -37,7 +33,7 @@ export const createProject = {
   },
   async resolve(parent, args) {
     try {
-      const { name, desc, startDate, duration, status, address } = args;
+      const { name, desc, startDate, status, address } = args;
       let projectID = name.replace(/\s/g, "").slice(0, 3).toUpperCase();
 
       // get the latest project that has the same projectID
@@ -60,7 +56,6 @@ export const createProject = {
         name,
         desc,
         startDate,
-        duration,
         createdBy: "admin",
         status,
         address,
