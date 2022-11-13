@@ -7,7 +7,6 @@ export default function getUpdatedStatus(project) {
   // if project has not started yet and scheduled Start date has passed
   if (
     project.status === "scheduled" &&
-    !project.actualStartDate &&
     new Date(project.scheduledStartDate) < new Date()
   ) {
     project.status = "delayed";

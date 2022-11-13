@@ -100,7 +100,7 @@ export const getProjects = {
     },
     type: {
       type: ProjectTypeType,
-      desc: "Type of project (active/inactive). Active: inProgress/delayed/completed. Inactive: acheduled/closed/onHold",
+      desc: "Type of project (active/inactive). Active: inProgress/delayed/completed. Inactive: scheduled/closed/onHold/delayed",
     },
     sort: {
       type: GraphQLString,
@@ -144,7 +144,7 @@ export const getProjects = {
         ];
       }
       let fromCondition = [];
-      let endCondition = [];
+      let toCondition = [];
       if (fromDate) {
         fromCondition = [
           { actualStartDate: { $gte: new Date(fromDate) } },
@@ -157,7 +157,7 @@ export const getProjects = {
         ];
       }
       if (toDate) {
-        endCondition = [
+        toCondition = [
           { actualStartDate: { $lte: new Date(toDate) } },
           {
             $and: [
@@ -168,11 +168,11 @@ export const getProjects = {
         ];
       }
       if (fromDate && toDate) {
-        filter.$and = [{ $or: fromCondition }, { $or: endCondition }];
+        filter.$and = [{ $or: fromCondition }, { $or: toCondition }];
       } else if (fromDate) {
         orCondition = [...orCondition, ...fromCondition];
       } else if (toDate) {
-        orCondition = [...orCondition, ...endCondition];
+        orCondition = [...orCondition, ...toCondition];
       }
 
       if (orCondition.length) {
