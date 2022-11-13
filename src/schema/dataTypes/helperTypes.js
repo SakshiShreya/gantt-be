@@ -47,6 +47,14 @@ export const StatusInputType = new GraphQLEnumType({
   },
 });
 
+export const ProjectTypeType = new GraphQLEnumType({
+  name: "ProjectType",
+  values: {
+    active: { value: "active" },
+    inactive: { value: "inactive" },
+  },
+});
+
 export const AddressType = new GraphQLObjectType({
   name: "Address",
   fields: () => ({

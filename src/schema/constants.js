@@ -5,11 +5,12 @@ export const description = {
   desc: "Description of the project",
   createdAt: "Date when the project was created",
   createdBy: "User who created the project",
-  scheduledStartDate: "Date when the project started",
+  scheduledStartDate: "Date when the project is expected to start",
   scheduledEndDate: "Date when the project is expected to end",
-  actualStartDate: "Date when the project started",
-  actualEndDate: "Date when the project ended",
-  status: "Status of the project (scheduled, inProgress, delayed, completed, closed, onHold)",
+  actualStartDate: "Date when the project actually started",
+  actualEndDate: "Date when the project actually ended",
+  statusInput: "Status of the project (scheduled, started, closed, onHold)",
+  statusOutput: "Status of the project (scheduled, inProgress, delayed, completed, closed, onHold)",
   address: "Address of the project",
 };
 
