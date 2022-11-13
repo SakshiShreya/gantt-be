@@ -52,7 +52,7 @@ const ProjectType = new GraphQLObjectType({
     },
     status: {
       type: new GraphQLNonNull(StatusOutputType),
-      description: description.status,
+      description: description.statusOutput,
     },
     address: {
       type: new GraphQLNonNull(AddressType),

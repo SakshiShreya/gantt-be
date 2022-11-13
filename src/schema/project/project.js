@@ -1,8 +1,15 @@
 import { GraphQLID, GraphQLList, GraphQLNonNull, GraphQLString } from "graphql";
+import mongoose from "mongoose";
 import getGraphQLError from "../../controllers/errorController/index.js";
 import Project from "../../models/projectModel.js";
+import getUpdatedStatus from "../../utils/getUpdatedStatus.js";
 import { description } from "../constants.js";
-import { AddressInputType, DateType, StatusInputType } from "../dataTypes/helperTypes.js";
+import {
+  AddressInputType,
+  DateType,
+  ProjectTypeType,
+  StatusInputType,
+} from "../dataTypes/helperTypes.js";
 import ProjectType from "../dataTypes/project.js";
 
 // CRUD APIS FOR PROJECTS
@@ -24,7 +31,7 @@ export const createProject = {
     },
     status: {
       type: StatusInputType,
-      description: description.status,
+      description: description.statusInput,
     },
     address: {
       type: new GraphQLNonNull(AddressInputType),
@@ -68,16 +75,112 @@ export const createProject = {
 
 export const getProjects = {
   type: new GraphQLList(ProjectType),
-  description: "Get one or more projects",
+  description: `Get one or more projects. All arguments are optional, pass only if you need to filter on these.
+  \nIf multiple filters are passed, then AND operation will be done on them.`,
   args: {
     _id: {
       type: GraphQLID,
-      desc: `${description.id}, pass only if needed to filter on any of the keys, e.g. (_id: 'shjdfjsdj5435')`,
+      desc: description.id,
+    },
+    projectID: {
+      type: GraphQLString,
+      desc: description.projectID,
+    },
+    search: {
+      type: GraphQLString,
+      desc: "Search for a project by projectID/name/location",
+    },
+    fromDate: {
+      type: DateType,
+      desc: "From Date of filter",
+    },
+    toDate: {
+      type: DateType,
+      desc: "End Date of filter",
+    },
+    type: {
+      type: ProjectTypeType,
+      desc: "Type of project (active/inactive). Active: inProgress/delayed/completed. Inactive: acheduled/closed/onHold",
+    },
+    sort: {
+      type: GraphQLString,
+      desc: "Sort by field. E.g. sort by name(ascending): name, sort by name(descending): -name",
     },
   },
-  resolve(parent, args) {
+  async resolve(parent, args) {
     try {
-      return Project.find(args);
+      const {
+        _id,
+        projectID,
+        search,
+        fromDate,
+        toDate,
+        type = "active",
+        sort = "-_id",
+      } = args;
+      const filter = {};
+      let orCondition = [];
+
+      if (_id) {
+        filter._id = mongoose.Types.ObjectId(_id);
+      }
+      if (projectID) {
+        filter.projectID = projectID;
+      }
+
+      if (type === "active") {
+        filter.status = "started";
+      } else if (type === "inactive") {
+        filter.status = { $in: ["scheduled", "closed", "onHold"] };
+      }
+
+      if (search) {
+        orCondition = [
+          ...orCondition,
+          { projectID: { $regex: search, $options: "i" } },
+          { name: { $regex: search, $options: "i" } },
+          { "address.city": { $regex: search, $options: "i" } },
+          { "address.state": { $regex: search, $options: "i" } },
+        ];
+      }
+      let fromCondition = [];
+      let endCondition = [];
+      if (fromDate) {
+        fromCondition = [
+          { actualStartDate: { $gte: new Date(fromDate) } },
+          {
+            $and: [
+              { actualStartDate: { $exists: false } },
+              { scheduledStartDate: { $gte: new Date(fromDate) } },
+            ],
+          },
+        ];
+      }
+      if (toDate) {
+        endCondition = [
+          { actualStartDate: { $lte: new Date(toDate) } },
+          {
+            $and: [
+              { actualStartDate: { $exists: false } },
+              { scheduledStartDate: { $lte: new Date(toDate) } },
+            ],
+          },
+        ];
+      }
+      if (fromDate && toDate) {
+        filter.$and = [{ $or: fromCondition }, { $or: endCondition }];
+      } else if (fromDate) {
+        orCondition = [...orCondition, ...fromCondition];
+      } else if (toDate) {
+        orCondition = [...orCondition, ...endCondition];
+      }
+
+      if (orCondition.length) {
+        filter.$or = orCondition;
+      }
+      const projects = await Project.find(filter).sort(sort);
+
+      return projects.map(getUpdatedStatus);
     } catch (err) {
       return getGraphQLError(err);
     }
