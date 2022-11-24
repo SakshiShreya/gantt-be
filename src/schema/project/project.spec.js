@@ -10,7 +10,7 @@ chai.use(chaiHttp);
 describe("Test Projects apis", () => {
   describe("Test CREATE Functionality", () => {
     const testProject = `mutation {
-      createProject(name: "Test Project", startDate: "${add(new Date(), {
+      createProject(name: "Test Project", scheduledStartDate: "${add(new Date(), {
         days: 10,
       }).toJSON()}", address: {address1: "Test Address 1", city: "Bangalore", state: "KARNATAKA", pinCode: 560093}, desc: "Testing a project") {
         id, name, projectID
