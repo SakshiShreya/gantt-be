@@ -119,7 +119,7 @@ export const getProjects = {
         type = "active",
         sort = "-_id",
       } = args;
-      const filter = {};
+      const filter = { deleted: false };
       let orCondition = [];
 
       if (_id) {
@@ -248,7 +248,7 @@ export const updateProject = {
         update.actualEndDate = new Date();
       }
 
-      await Project.findOneAndUpdate({ projectID }, update);
+      await Project.findOneAndUpdate({ projectID, deleted: false }, update);
       return { ok: 1, nModified: 1 };
     } catch (err) {
       return getGraphQLError(err);
@@ -257,18 +257,19 @@ export const updateProject = {
 };
 
 export const deleteProject = {
-  type: ProjectType,
-  description: "Delete a project",
+  type: ModifiedType,
+  description: "Soft delete a project",
   args: {
-    _id: {
-      type: new GraphQLNonNull(GraphQLID),
-      description: `${description.id}, used to find the project to be deleted`,
+    projectID: {
+      type: new GraphQLNonNull(GraphQLString),
+      description: `${description.projectID}, used to find the project to be deleted`,
     },
   },
   resolve: async (parent, args) => {
     try {
-      const newProject = await Project.findByIdAndDelete(args.id);
-      return newProject;
+      const { projectID } = args;
+      await Project.findOneAndUpdate({ projectID }, { deleted: true });
+      return { ok: 1, nModified: 1 };
     } catch (err) {
       return getGraphQLError(err);
     }
