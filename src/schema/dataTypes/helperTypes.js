@@ -86,4 +86,12 @@ export const PinToAddrType = new GraphQLObjectType({
   }),
 });
 
+export const ModifiedType = new GraphQLObjectType({
+  name: "Modified",
+  fields: () => ({
+    ok: { type: GraphQLInt },
+    nModified: { type: GraphQLInt },
+  }),
+});
+
 export default { DateType };

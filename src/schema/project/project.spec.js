@@ -10,10 +10,11 @@ chai.use(chaiHttp);
 describe("Test Projects apis", () => {
   describe("Test CREATE Functionality", () => {
     const testProject = `mutation {
-      createProject(name: "Test Project", startDate: "${add(new Date(), {
-        days: 10,
-      }).toJSON()}", address: {address1: "Test Address 1", city: "Bangalore", state: "KARNATAKA", pinCode: 560093}, desc: "Testing a project") {
-        id, name, projectID
+      createProject(name: "Test Project", scheduledStartDate: "${add(
+        new Date(),
+        { days: 10 },
+      ).toJSON()}", address: {address1: "Test Address 1", city: "Bangalore", state: "KARNATAKA", pinCode: 560093}, desc: "Testing a project") {
+        id, name, projectID, status
       }
     }`;
     it("should create a project successfully", (done) => {
@@ -37,6 +38,15 @@ describe("Test Projects apis", () => {
             "Project name should be present",
           );
           assert.equal(res.body.data.createProject.name, "Test Project");
+          assert.isDefined(
+            res.body.data.createProject.status,
+            "Project status should be present",
+          );
+          assert.equal(
+            res.body.data.createProject.status,
+            "scheduled",
+            "Status should be scheduled by default",
+          );
           done();
         });
     });
@@ -494,6 +504,285 @@ describe("Test Projects apis", () => {
             done();
           });
       });
+    });
+  });
+
+  describe("Test UPDATE Functionality", () => {
+    it("should update a project successfully", (done) => {
+      const testProject = `mutation {
+        updateProject(projectID: "TES", name: "Test Project100", scheduledStartDate: "${sub(
+          new Date(),
+          { days: 10 },
+        ).toJSON()}") { ok, nModified }
+      }`;
+      chai
+        .request(server)
+        .post("/graphql")
+        .send({ query: testProject })
+        .end((err, res) => {
+          assert.equal(res.status, 200);
+          assert.isDefined(res.body.data, "Data should be present");
+          assert.isDefined(
+            res.body.data.updateProject,
+            "Project should be present",
+          );
+          assert.equal(res.body.data.updateProject.ok, 1);
+          assert.equal(res.body.data.updateProject.nModified, 1);
+
+          const query = `{getProjects(projectID: "TES", type: inactive) {name, projectID, status, scheduledStartDate}}`;
+
+          chai
+            .request(server)
+            .get(`/graphql?query=${query}`)
+            .set("Content-Type", "application/json")
+            .set("Accept", "application/json")
+            .end((err1, res1) => {
+              assert.isDefined(
+                res1.body.data.getProjects[0].name,
+                "Project name should be present",
+              );
+              assert.equal(
+                res1.body.data.getProjects[0].name,
+                "Test Project100",
+              );
+              assert.isDefined(
+                res1.body.data.getProjects[0].projectID,
+                "Project projectID should be present",
+              );
+              assert.equal(res1.body.data.getProjects[0].projectID, "TES");
+              assert.isDefined(
+                res1.body.data.getProjects[0].status,
+                "Project status should be present",
+              );
+              assert.equal(res1.body.data.getProjects[0].status, "delayed");
+              done();
+            });
+        });
+    });
+
+    let actualStartDate;
+    it("should set actualStartDate to current time if status is set to started for the first time", (done) => {
+      const testProject = `mutation {
+        updateProject(projectID: "TES", status: started) { ok, nModified }
+      }`;
+      chai
+        .request(server)
+        .post("/graphql")
+        .send({ query: testProject })
+        .end((err, res) => {
+          assert.equal(res.status, 200);
+          assert.isDefined(res.body.data, "Data should be present");
+          assert.isDefined(
+            res.body.data.updateProject,
+            "Project should be present",
+          );
+          assert.equal(res.body.data.updateProject.ok, 1);
+          assert.equal(res.body.data.updateProject.nModified, 1);
+
+          const query = `{getProjects(projectID: "TES") {projectID, status, actualStartDate, actualEndDate}}`;
+
+          chai
+            .request(server)
+            .get(`/graphql?query=${query}`)
+            .set("Content-Type", "application/json")
+            .set("Accept", "application/json")
+            .end((err1, res1) => {
+              assert.isDefined(
+                res1.body.data.getProjects[0].projectID,
+                "ProjectID should be present",
+              );
+              assert.equal(res1.body.data.getProjects[0].projectID, "TES");
+              assert.isDefined(
+                res1.body.data.getProjects[0].status,
+                "Project status should be present",
+              );
+              assert.equal(res1.body.data.getProjects[0].status, "inProgress");
+              assert.isDefined(
+                res1.body.data.getProjects[0].actualStartDate,
+                "Project actualStartDate should be present",
+              );
+              assert.approximately(
+                new Date(
+                  res1.body.data.getProjects[0].actualStartDate,
+                ).getTime(),
+                new Date().getTime(),
+                1000,
+              );
+              ({ actualStartDate } = res1.body.data.getProjects[0]);
+              assert.isNull(
+                res1.body.data.getProjects[0].actualEndDate,
+                "Project actualEndDate should not be present",
+              );
+              done();
+            });
+        });
+    });
+
+    it("should set project to hold without affecting actualStartDate", (done) => {
+      const testProject = `mutation {
+        updateProject(projectID: "TES", status: onHold) { ok, nModified }
+      }`;
+      chai
+        .request(server)
+        .post("/graphql")
+        .send({ query: testProject })
+        .end((err, res) => {
+          assert.equal(res.status, 200);
+          assert.isDefined(res.body.data, "Data should be present");
+          assert.isDefined(
+            res.body.data.updateProject,
+            "Project should be present",
+          );
+          assert.equal(res.body.data.updateProject.ok, 1);
+          assert.equal(res.body.data.updateProject.nModified, 1);
+
+          const query = `{getProjects(projectID: "TES", type: inactive) {projectID, status, actualStartDate, actualEndDate}}`;
+
+          chai
+            .request(server)
+            .get(`/graphql?query=${query}`)
+            .set("Content-Type", "application/json")
+            .set("Accept", "application/json")
+            .end((err1, res1) => {
+              assert.isDefined(
+                res1.body.data.getProjects[0].projectID,
+                "ProjectID should be present",
+              );
+              assert.equal(res1.body.data.getProjects[0].projectID, "TES");
+              assert.isDefined(
+                res1.body.data.getProjects[0].status,
+                "Project status should be present",
+              );
+              assert.equal(res1.body.data.getProjects[0].status, "onHold");
+              assert.isDefined(
+                res1.body.data.getProjects[0].actualStartDate,
+                "Project actualStartDate should be present",
+              );
+              assert.equal(
+                res1.body.data.getProjects[0].actualStartDate,
+                actualStartDate,
+                `from api ${res1.body.data.getProjects[0].actualStartDate} from test ${actualStartDate}`,
+              );
+              assert.isNull(
+                res1.body.data.getProjects[0].actualEndDate,
+                "Project actualEndDate should not be present",
+              );
+              done();
+            });
+        });
+    });
+
+    it("should set project to start again without affecting actualStartDate", (done) => {
+      const testProject = `mutation {
+        updateProject(projectID: "TES", status: started) { ok, nModified }
+      }`;
+      chai
+        .request(server)
+        .post("/graphql")
+        .send({ query: testProject })
+        .end((err, res) => {
+          assert.equal(res.status, 200);
+          assert.isDefined(res.body.data, "Data should be present");
+          assert.isDefined(
+            res.body.data.updateProject,
+            "Project should be present",
+          );
+          assert.equal(res.body.data.updateProject.ok, 1);
+          assert.equal(res.body.data.updateProject.nModified, 1);
+
+          const query = `{getProjects(projectID: "TES") {projectID, status, actualStartDate, actualEndDate}}`;
+
+          chai
+            .request(server)
+            .get(`/graphql?query=${query}`)
+            .set("Content-Type", "application/json")
+            .set("Accept", "application/json")
+            .end((err1, res1) => {
+              assert.isDefined(
+                res1.body.data.getProjects[0].projectID,
+                "ProjectID should be present",
+              );
+              assert.equal(res1.body.data.getProjects[0].projectID, "TES");
+              assert.isDefined(
+                res1.body.data.getProjects[0].status,
+                "Project status should be present",
+              );
+              assert.equal(res1.body.data.getProjects[0].status, "inProgress");
+              assert.isDefined(
+                res1.body.data.getProjects[0].actualStartDate,
+                "Project actualStartDate should be present",
+              );
+              assert.equal(
+                res1.body.data.getProjects[0].actualStartDate,
+                actualStartDate,
+                `from api ${res1.body.data.getProjects[0].actualStartDate} from test ${actualStartDate}`,
+              );
+              assert.isNull(
+                res1.body.data.getProjects[0].actualEndDate,
+                "Project actualEndDate should not be present",
+              );
+              done();
+            });
+        });
+    });
+
+    it("should set actualEndDate to current time if status is set to closed without affecting actualStartDate", (done) => {
+      const testProject = `mutation {
+        updateProject(projectID: "TES", status: closed) { ok, nModified }
+      }`;
+      chai
+        .request(server)
+        .post("/graphql")
+        .send({ query: testProject })
+        .end((err, res) => {
+          assert.equal(res.status, 200);
+          assert.isDefined(res.body.data, "Data should be present");
+          assert.isDefined(
+            res.body.data.updateProject,
+            "Project should be present",
+          );
+          assert.equal(res.body.data.updateProject.ok, 1);
+          assert.equal(res.body.data.updateProject.nModified, 1);
+
+          const query = `{getProjects(projectID: "TES", type: inactive) {projectID, status, actualStartDate, actualEndDate}}`;
+
+          chai
+            .request(server)
+            .get(`/graphql?query=${query}`)
+            .set("Content-Type", "application/json")
+            .set("Accept", "application/json")
+            .end((err1, res1) => {
+              assert.isDefined(
+                res1.body.data.getProjects[0].projectID,
+                "ProjectID should be present",
+              );
+              assert.equal(res1.body.data.getProjects[0].projectID, "TES");
+              assert.isDefined(
+                res1.body.data.getProjects[0].status,
+                "Project status should be present",
+              );
+              assert.equal(res1.body.data.getProjects[0].status, "closed");
+              assert.isDefined(
+                res1.body.data.getProjects[0].actualStartDate,
+                "Project actualStartDate should be present",
+              );
+              assert.equal(
+                res1.body.data.getProjects[0].actualStartDate,
+                actualStartDate,
+                `from api ${res1.body.data.getProjects[0].actualStartDate} from test ${actualStartDate}`,
+              );
+              assert.isDefined(
+                res1.body.data.getProjects[0].actualEndDate,
+                "Project actualEndDate should not be present",
+              );
+              assert.approximately(
+                new Date(res1.body.data.getProjects[0].actualEndDate).getTime(),
+                new Date().getTime(),
+                1000,
+              );
+              done();
+            });
+        });
     });
   });
 

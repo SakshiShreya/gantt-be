@@ -7,6 +7,7 @@ import { description } from "../constants.js";
 import {
   AddressInputType,
   DateType,
+  ModifiedType,
   ProjectTypeType,
   StatusInputType,
 } from "../dataTypes/helperTypes.js";
@@ -25,7 +26,7 @@ export const createProject = {
       type: GraphQLString,
       description: description.desc,
     },
-    startDate: {
+    scheduledStartDate: {
       type: new GraphQLNonNull(DateType),
       description: description.scheduledStartDate,
     },
@@ -40,7 +41,7 @@ export const createProject = {
   },
   async resolve(parent, args) {
     try {
-      const { name, desc, startDate, status, address } = args;
+      const { name, desc, scheduledStartDate, status, address } = args;
       let projectID = name.replace(/\s/g, "").slice(0, 3).toUpperCase();
 
       // get the latest project that has the same projectID
@@ -62,7 +63,7 @@ export const createProject = {
         projectID,
         name,
         desc,
-        scheduledStartDate: startDate,
+        scheduledStartDate,
         createdBy: "admin",
         status,
         address,
@@ -188,23 +189,67 @@ export const getProjects = {
 };
 
 export const updateProject = {
-  type: ProjectType,
+  type: ModifiedType,
   description: "Update a project",
   args: {
-    _id: {
-      type: new GraphQLNonNull(GraphQLID),
-      description: `${description.id}, used to find the project to be updated.`,
+    projectID: {
+      type: new GraphQLNonNull(GraphQLString),
+      description: `${description.projectID}, used to find the project to be updated.`,
     },
     name: { type: GraphQLString, description: description.name },
     desc: {
       type: GraphQLString,
       description: description.desc,
     },
+    scheduledStartDate: {
+      type: DateType,
+      description: description.scheduledStartDate,
+    },
+    status: {
+      type: StatusInputType,
+      description: description.statusInput,
+    },
+    address: {
+      type: AddressInputType,
+      description: description.address,
+    },
   },
-  resolve(parent, args) {
+  async resolve(parent, args) {
     try {
-      const { _id, name, desc } = args;
-      return Project.findByIdAndUpdate(_id, { name, desc });
+      const { projectID, name, desc, scheduledStartDate, status, address } =
+        args;
+
+      const project = await Project.findOne(
+        { projectID },
+        { actualStartDate: 1 },
+      );
+
+      const update = {};
+
+      if (name) {
+        update.name = name;
+      }
+      if (desc) {
+        update.desc = desc;
+      }
+      if (scheduledStartDate) {
+        update.scheduledStartDate = scheduledStartDate;
+      }
+      if (status) {
+        update.status = status;
+      }
+      if (address) {
+        update.address = address;
+      }
+
+      if (status === "started" && !project.actualStartDate) {
+        update.actualStartDate = new Date();
+      } else if (status === "closed") {
+        update.actualEndDate = new Date();
+      }
+
+      await Project.findOneAndUpdate({ projectID }, update);
+      return { ok: 1, nModified: 1 };
     } catch (err) {
       return getGraphQLError(err);
     }
