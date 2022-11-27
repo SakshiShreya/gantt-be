@@ -7,6 +7,7 @@ import { description } from "../constants.js";
 import {
   AddressInputType,
   DateType,
+  ModifiedType,
   ProjectTypeType,
   StatusInputType,
 } from "../dataTypes/helperTypes.js";
@@ -188,7 +189,7 @@ export const getProjects = {
 };
 
 export const updateProject = {
-  type: ProjectType,
+  type: ModifiedType,
   description: "Update a project",
   args: {
     projectID: {
@@ -218,7 +219,10 @@ export const updateProject = {
       const { projectID, name, desc, scheduledStartDate, status, address } =
         args;
 
-      const project = await Project.findOne({ projectID }, { actualStartDate: 1 });
+      const project = await Project.findOne(
+        { projectID },
+        { actualStartDate: 1 },
+      );
 
       const update = {};
 
@@ -244,7 +248,8 @@ export const updateProject = {
         update.actualEndDate = new Date();
       }
 
-      return Project.findOneAndUpdate({ projectID }, update);
+      await Project.findOneAndUpdate({ projectID }, update);
+      return { ok: 1, nModified: 1 };
     } catch (err) {
       return getGraphQLError(err);
     }
