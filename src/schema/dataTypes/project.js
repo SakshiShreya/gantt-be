@@ -58,6 +58,10 @@ const ProjectType = new GraphQLObjectType({
       type: new GraphQLNonNull(AddressType),
       description: description.address,
     },
+    projectOwner: {
+      type: new GraphQLNonNull(GraphQLString),
+      description: description.projectOwner,
+    }
   }),
 });
 

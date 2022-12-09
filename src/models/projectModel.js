@@ -17,7 +17,8 @@ const projectSchema = new mongoose.Schema({
   desc: { type: String, trim: true },
   createdAt: { type: Date, required: true, default: Date.now() },
   createdBy: { type: String, required: true },
-  scheduledStartDate: { // this date is defined when user creates a project
+  scheduledStartDate: {
+    // this date is defined when user creates a project
     type: Date,
     required: [true, "A project must have a start date"],
   },
@@ -34,6 +35,7 @@ const projectSchema = new mongoose.Schema({
     type: addressSchema,
     required: [true, "A project must have an address"],
   },
+  projectOwner: { type: String, required: true },
 });
 
 projectSchema.virtual("scheduledEndDate").get(function () {
