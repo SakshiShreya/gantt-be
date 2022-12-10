@@ -1,4 +1,4 @@
-import { GraphQLID, GraphQLList, GraphQLNonNull, GraphQLString } from "graphql";
+import { GraphQLID, GraphQLInt, GraphQLList, GraphQLNonNull, GraphQLString } from "graphql";
 import mongoose from "mongoose";
 import getGraphQLError from "../../controllers/errorController/index.js";
 import Project from "../../models/projectModel.js";
@@ -81,32 +81,36 @@ export const getProjects = {
   args: {
     _id: {
       type: GraphQLID,
-      desc: description.id,
+      description: description.id,
     },
     projectID: {
       type: GraphQLString,
-      desc: description.projectID,
+      description: description.projectID,
     },
     search: {
       type: GraphQLString,
-      desc: "Search for a project by projectID/name/location",
+      description: "Search for a project by projectID/name/location",
     },
     fromDate: {
       type: DateType,
-      desc: "From Date of filter",
+      description: "From Date of filter",
     },
     toDate: {
       type: DateType,
-      desc: "End Date of filter",
+      description: "End Date of filter",
     },
     type: {
       type: ProjectTypeType,
-      desc: "Type of project (active/inactive). Active: inProgress/delayed/completed. Inactive: scheduled/closed/onHold/delayed",
+      description: "Type of project (active/inactive). Active: inProgress/delayed/completed. Inactive: scheduled/closed/onHold/delayed",
     },
     sort: {
       type: GraphQLString,
-      desc: "Sort by field. E.g. sort by name(ascending): name, sort by name(descending): -name",
+      description: "Sort by field. E.g. sort by name(ascending): name, sort by name(descending): -name",
     },
+    page: {
+      type: GraphQLInt,
+      description: "Page number, starts from 0",
+    }
   },
   async resolve(parent, args) {
     try {
@@ -118,6 +122,7 @@ export const getProjects = {
         toDate,
         type = "active",
         sort = "-_id",
+        page = 0,
       } = args;
       const filter = { deleted: false };
       let orCondition = [];
@@ -179,7 +184,8 @@ export const getProjects = {
       if (orCondition.length) {
         filter.$or = orCondition;
       }
-      const projects = await Project.find(filter).sort(sort);
+      const limit = +process.env.PAGINATION_LIMIT;
+      const projects = await Project.find(filter).sort(sort).limit(limit).skip(page * limit).exec();
 
       return projects.map(getUpdatedStatus);
     } catch (err) {
