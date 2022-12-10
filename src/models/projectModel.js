@@ -35,6 +35,7 @@ const projectSchema = new mongoose.Schema({
     type: addressSchema,
     required: [true, "A project must have an address"],
   },
+  deleted: { type: Boolean, default: false, select: false },
 });
 
 // this adds createdAt and updatedAt fields to the schema
