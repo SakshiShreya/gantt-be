@@ -786,6 +786,40 @@ describe("Test Projects apis", () => {
     });
   });
 
+  describe("Test DELETE Functionality", () => {
+    it("should delete a project successfully", (done) => {
+      const testProject = `mutation {
+        deleteProject(projectID: "TES1") { ok, nModified }
+      }`;
+      chai
+        .request(server)
+        .post("/graphql")
+        .send({ query: testProject })
+        .end((err, res) => {
+          assert.equal(res.status, 200);
+          assert.isDefined(res.body.data, "Data should be present");
+          assert.isDefined(
+            res.body.data.deleteProject,
+            "Project should be present",
+          );
+          assert.equal(res.body.data.deleteProject.ok, 1);
+          assert.equal(res.body.data.deleteProject.nModified, 1);
+
+          const query = `{getProjects(type: inactive) {projectID, status, actualStartDate, actualEndDate}}`;
+
+          chai
+            .request(server)
+            .get(`/graphql?query=${query}`)
+            .set("Content-Type", "application/json")
+            .set("Accept", "application/json")
+            .end((err1, res1) => {
+              assert.equal(res1.body.data.getProjects.length, 2);
+              done();
+            });
+        });
+    })
+  })
+
   after((done) => {
     Project.db.dropCollection("projects", () => {
       done();
