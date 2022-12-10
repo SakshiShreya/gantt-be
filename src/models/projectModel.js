@@ -15,9 +15,10 @@ const projectSchema = new mongoose.Schema({
     ],
   },
   desc: { type: String, trim: true },
-  createdAt: { type: Date, required: true, default: Date.now() },
   createdBy: { type: String, required: true },
-  scheduledStartDate: { // this date is defined when user creates a project
+  updatedBy: { type: String, required: true },
+  scheduledStartDate: {
+    // this date is defined when user creates a project
     type: Date,
     required: [true, "A project must have a start date"],
   },
@@ -35,6 +36,9 @@ const projectSchema = new mongoose.Schema({
     required: [true, "A project must have an address"],
   },
 });
+
+// this adds createdAt and updatedAt fields to the schema
+projectSchema.set("timestamps", true);
 
 projectSchema.virtual("scheduledEndDate").get(function () {
   const { scheduledStartDate } = this;
