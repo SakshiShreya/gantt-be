@@ -35,6 +35,7 @@ const projectSchema = new mongoose.Schema({
     type: addressSchema,
     required: [true, "A project must have an address"],
   },
+  projectOwner: { type: String, required: true },
   deleted: { type: Boolean, default: false, select: false },
 });
 
