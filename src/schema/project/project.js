@@ -1,7 +1,16 @@
-import { GraphQLID, GraphQLInt, GraphQLList, GraphQLNonNull, GraphQLString } from "graphql";
+import { add } from "date-fns";
+import {
+  GraphQLID,
+  GraphQLInt,
+  GraphQLList,
+  GraphQLNonNull,
+  GraphQLString,
+} from "graphql";
 import mongoose from "mongoose";
 import getGraphQLError from "../../controllers/errorController/index.js";
 import Project from "../../models/projectModel.js";
+import AppError from "../../utils/appError.js";
+import getExpectedEndDate from "../../utils/getExpectedEndDate.js";
 import getUpdatedStatus from "../../utils/getUpdatedStatus.js";
 import { description } from "../constants.js";
 import {
@@ -30,10 +39,6 @@ export const createProject = {
       type: new GraphQLNonNull(DateType),
       description: description.scheduledStartDate,
     },
-    status: {
-      type: StatusInputType,
-      description: description.statusInput,
-    },
     address: {
       type: new GraphQLNonNull(AddressInputType),
       description: description.address,
@@ -45,8 +50,7 @@ export const createProject = {
   },
   async resolve(parent, args) {
     try {
-      const { name, desc, scheduledStartDate, status, address, projectOwner } =
-        args;
+      const { name, desc, scheduledStartDate, address, projectOwner } = args;
       let projectID = name.replace(/\s/g, "").slice(0, 3).toUpperCase();
 
       // get the latest project that has the same projectID
@@ -72,7 +76,6 @@ export const createProject = {
         createdBy: "admin",
         updatedBy: "admin",
         projectOwner,
-        status,
         address,
       });
     } catch (err) {
@@ -108,16 +111,18 @@ export const getProjects = {
     },
     type: {
       type: ProjectTypeType,
-      description: "Type of project (active/inactive). Active: inProgress/delayed/completed. Inactive: scheduled/closed/onHold/delayed",
+      description:
+        "Type of project (active/inactive). Active: inProgress/delayed/completed. Inactive: scheduled/closed/onHold/delayed",
     },
     sort: {
       type: GraphQLString,
-      description: "Sort by field. E.g. sort by name(ascending): name, sort by name(descending): -name",
+      description:
+        "Sort by field. E.g. sort by name(ascending): name, sort by name(descending): -name",
     },
     page: {
       type: GraphQLInt,
       description: "Page number, starts from 0",
-    }
+    },
   },
   async resolve(parent, args) {
     try {
@@ -192,9 +197,15 @@ export const getProjects = {
         filter.$or = orCondition;
       }
       const limit = +process.env.PAGINATION_LIMIT;
-      const projects = await Project.find(filter).sort(sort).limit(limit).skip(page * limit).exec();
+      let projects = await Project.find(filter)
+        .sort(sort)
+        .limit(limit)
+        .skip(page * limit)
+        .exec();
 
-      return projects.map(getUpdatedStatus);
+      projects = projects.map(getExpectedEndDate);
+      projects = projects.map(getUpdatedStatus);
+      return projects;
     } catch (err) {
       return getGraphQLError(err);
     }
@@ -245,10 +256,17 @@ export const updateProject = {
 
       const project = await Project.findOne(
         { projectID },
-        { actualStartDate: 1 },
+        "actualStartDate status",
       );
 
-      const update = { };
+      if (project.status !== "scheduled" && scheduledStartDate) {
+        throw new AppError(
+          "Can't update scheduledStartDate after project has started.",
+          400,
+        );
+      }
+
+      const update = {};
 
       if (name) {
         update.name = name;
@@ -271,12 +289,13 @@ export const updateProject = {
 
       if (status === "started" && !project.actualStartDate) {
         update.actualStartDate = new Date();
+        update.scheduledEndDate = add(new Date(), { months: 1 });
       } else if (status === "closed") {
         update.actualEndDate = new Date();
       }
 
       if (Object.keys(update).length) {
-        update.updatedBy = "admin"
+        update.updatedBy = "admin";
       }
 
       await Project.findOneAndUpdate({ projectID, deleted: false }, update);

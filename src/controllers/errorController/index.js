@@ -149,6 +149,7 @@ export default function getGraphQLError(err) {
     description: `Error: ${err}`,
     type: Type.error,
     ref: error,
+    stack: err.stack,
   });
 
   return new GraphQLError(err, null, null, null, null, err, {

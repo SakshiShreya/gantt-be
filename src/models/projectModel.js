@@ -1,4 +1,3 @@
-import { add } from "date-fns";
 import mongoose from "mongoose";
 import { addressSchema } from "./helper.js";
 
@@ -23,6 +22,7 @@ const projectSchema = new mongoose.Schema({
     required: [true, "A project must have a start date"],
   },
   actualStartDate: Date, // this date is defined when user starts a project
+  scheduledEndDate: Date, // this date is defined when user starts a project
   actualEndDate: Date, // this date is defined when user closes a project
   status: {
     type: String,
@@ -41,13 +41,6 @@ const projectSchema = new mongoose.Schema({
 
 // this adds createdAt and updatedAt fields to the schema
 projectSchema.set("timestamps", true);
-
-projectSchema.virtual("scheduledEndDate").get(function () {
-  const { scheduledStartDate } = this;
-
-  // This is just a temporary logic until project details are added
-  return add(new Date(scheduledStartDate), { months: 1 });
-});
 
 const Project = mongoose.model("Project", projectSchema);
 
