@@ -70,6 +70,7 @@ export const createProject = {
         desc,
         scheduledStartDate,
         createdBy: "admin",
+        updatedBy: "admin",
         projectOwner,
         status,
         address,
@@ -247,7 +248,7 @@ export const updateProject = {
         { actualStartDate: 1 },
       );
 
-      const update = {};
+      const update = { };
 
       if (name) {
         update.name = name;
@@ -272,6 +273,10 @@ export const updateProject = {
         update.actualStartDate = new Date();
       } else if (status === "closed") {
         update.actualEndDate = new Date();
+      }
+
+      if (Object.keys(update).length) {
+        update.updatedBy = "admin"
       }
 
       await Project.findOneAndUpdate({ projectID, deleted: false }, update);

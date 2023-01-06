@@ -15,7 +15,7 @@ describe("Test Projects apis", () => {
         new Date(),
         { days: 10 },
       ).toJSON()}", address: {address1: "Test Address 1", city: "Bangalore", state: "KARNATAKA", pinCode: 560093}, desc: "Testing a project", projectOwner: "Test Owner") {
-        id, name, projectID, status
+        id, name, projectID, status, createdAt, createdBy, updatedAt, updatedBy
       }
     }`;
     it("should create a project successfully", (done) => {
@@ -55,6 +55,18 @@ describe("Test Projects apis", () => {
             "scheduled",
             "Status should be scheduled by default",
           );
+          assert.approximately(
+            new Date(res.body.data.createProject.createdAt).getTime(),
+            new Date().getTime(),
+            1000,
+          );
+          assert.equal(res.body.data.createProject.createdBy, "admin");
+          assert.approximately(
+            new Date(res.body.data.createProject.updatedAt).getTime(),
+            new Date().getTime(),
+            1000,
+          );
+          assert.equal(res.body.data.createProject.updatedBy, "admin");
           done();
         });
     });
@@ -102,71 +114,49 @@ describe("Test Projects apis", () => {
       // create more projects
 
       // 1. 2 active projects
-      await Project.create({
-        projectID: "PRO1",
-        name: "Project abc 1",
-        status: "started",
-        actualStartDate: add(new Date(), { days: 10 }),
-        scheduledStartDate: sub(new Date(), { days: 10 }),
-        address: {
-          address1: "ABC",
-          city: "Bangalore",
-          state: "KARNATAKA",
-          pinCode: 560093,
-        },
-        createdBy: "admin",
-        desc: "Testing a project",
-        projectOwner: "Test Owner1",
-      });
+      let query = `mutation {createProject(name: "Project abc 1", scheduledStartDate: "${add(
+        new Date(),
+        { days: 10 },
+      )}", address: {address1: "ABC", city: "Bangalore", state: "KARNATAKA", pinCode: 560093}, desc: "Testing a project", projectOwner: "Test Owner1") {id}}`;
+      await chai.request(server).post("/graphql").send({ query });
+      query = `mutation{updateProject(projectID: "PRO", status: started){ok}}`;
+      await chai.request(server).post("/graphql").send({ query });
+      await Project.updateOne(
+        { projectID: "PRO" },
+        { $set: { actualStartDate: add(new Date(), { days: 10 }) } },
+      );
 
-      await Project.create({
-        projectID: "PRO2",
-        name: "Project 2",
-        status: "started",
-        actualStartDate: sub(new Date(), { days: 10 }),
-        scheduledStartDate: sub(new Date(), { days: 10 }),
-        address: {
-          address1: "ABC",
-          city: "Bangalore",
-          state: "KARNATAKA",
-          pinCode: 560093,
-        },
-        createdBy: "admin",
-        desc: "Testing a project",
-        projectOwner: "Test Owner2",
-      });
+      query = `mutation {createProject(name: "Project 2", scheduledStartDate: "${sub(
+        new Date(),
+        { days: 10 },
+      )}", address: {address1: "ABC", city: "Bangalore", state: "KARNATAKA", pinCode: 560093}, desc: "Testing a project", projectOwner: "Test Owner2") {id}}`;
+      await chai.request(server).post("/graphql").send({ query });
+      query = `mutation{updateProject(projectID: "PRO1", status: started){ok}}`;
+      await chai.request(server).post("/graphql").send({ query });
+      await Project.updateOne(
+        { projectID: "PRO1" },
+        { $set: { actualStartDate: sub(new Date(), { days: 10 }) } },
+      );
 
-      await Project.create({
-        projectID: "PRO3",
-        name: "Project 2",
-        scheduledStartDate: sub(new Date(), { days: 10 }),
-        address: {
-          address1: "ABC",
-          city: "Bangalore",
-          state: "KARNATAKA",
-          pinCode: 560093,
-        },
-        createdBy: "admin",
-        desc: "Testing a project",
-        projectOwner: "Test Owner1",
-      });
+      // 2. 1 inactive project
+      query = `mutation {createProject(name: "Project 2", scheduledStartDate: "${sub(
+        new Date(),
+        { days: 10 },
+      )}", address: {address1: "ABC", city: "Bangalore", state: "KARNATAKA", pinCode: 560093}, desc: "Testing a project", projectOwner: "Test Owner1") {id}}`;
+      await chai.request(server).post("/graphql").send({ query });
 
-      await Project.create({
-        projectID: "PRO4",
-        name: "Project abcd 2",
-        status: "started",
-        actualStartDate: sub(new Date(), { days: 10 }),
-        scheduledStartDate: sub(new Date(), { days: 10 }),
-        address: {
-          address1: "ABC",
-          city: "Bangalore",
-          state: "KARNATAKA",
-          pinCode: 560093,
-        },
-        createdBy: "admin",
-        desc: "Testing a project",
-        projectOwner: "Test Owner2",
-      });
+      // 3. 1 more active project
+      query = `mutation {createProject(name: "Project abcd 2", scheduledStartDate: "${sub(
+        new Date(),
+        { days: 10 },
+      )}", address: {address1: "ABC", city: "Bangalore", state: "KARNATAKA", pinCode: 560093}, desc: "Testing a project", projectOwner: "Test Owner2") {id}}`;
+      await chai.request(server).post("/graphql").send({ query });
+      query = `mutation{updateProject(projectID: "PRO3", status: started){ok}}`;
+      await chai.request(server).post("/graphql").send({ query });
+      await Project.updateOne(
+        { projectID: "PRO3" },
+        { $set: { actualStartDate: sub(new Date(), { days: 10 }) } },
+      );
     });
 
     it("should get all active projects, sorted on -_id if no args are passed", (done) => {
@@ -178,6 +168,8 @@ describe("Test Projects apis", () => {
           desc
           createdAt
           createdBy
+          updatedAt
+          updatedBy
           scheduledStartDate
           scheduledEndDate
           actualStartDate
@@ -231,6 +223,14 @@ describe("Test Projects apis", () => {
             "createdBy should be present",
           );
           assert.isDefined(
+            res.body.data.getProjects[0].updatedAt,
+            "updatedAt should be present",
+          );
+          assert.isDefined(
+            res.body.data.getProjects[0].updatedBy,
+            "updatedBy should be present",
+          );
+          assert.isDefined(
             res.body.data.getProjects[0].scheduledStartDate,
             "scheduledStartDate should be present",
           );
@@ -263,9 +263,9 @@ describe("Test Projects apis", () => {
             "pinCode should be present",
           );
           // sorted on -_id
-          assert.equal(res.body.data.getProjects[0].projectID, "PRO4");
-          assert.equal(res.body.data.getProjects[1].projectID, "PRO2");
-          assert.equal(res.body.data.getProjects[2].projectID, "PRO1");
+          assert.equal(res.body.data.getProjects[0].projectID, "PRO3");
+          assert.equal(res.body.data.getProjects[1].projectID, "PRO1");
+          assert.equal(res.body.data.getProjects[2].projectID, "PRO");
           // status should be "inProgress"/"completed"/"delayed"
           assert.equal(
             ["inProgress", "completed", "delayed"].includes(
@@ -302,7 +302,7 @@ describe("Test Projects apis", () => {
           );
           assert.equal(res.body.data.getProjects.length, 3);
           // sorted on -_id
-          assert.equal(res.body.data.getProjects[0].projectID, "PRO3");
+          assert.equal(res.body.data.getProjects[0].projectID, "PRO2");
           assert.equal(res.body.data.getProjects[1].projectID, "TES1");
           assert.equal(res.body.data.getProjects[2].projectID, "TES");
           // status should be "inProgress"/"completed"/"delayed"
@@ -371,7 +371,7 @@ describe("Test Projects apis", () => {
             );
 
             assert.equal(res.body.data.getProjects.length, 1);
-            assert.equal(res.body.data.getProjects[0].projectID, "PRO1");
+            assert.equal(res.body.data.getProjects[0].projectID, "PRO");
             done();
           });
       });
@@ -432,8 +432,8 @@ describe("Test Projects apis", () => {
             );
 
             assert.equal(res.body.data.getProjects.length, 2);
-            assert.equal(res.body.data.getProjects[0].projectID, "PRO4");
-            assert.equal(res.body.data.getProjects[1].projectID, "PRO2");
+            assert.equal(res.body.data.getProjects[0].projectID, "PRO3");
+            assert.equal(res.body.data.getProjects[1].projectID, "PRO1");
             done();
           });
       });
@@ -462,7 +462,7 @@ describe("Test Projects apis", () => {
             );
 
             assert.equal(res.body.data.getProjects.length, 1);
-            assert.equal(res.body.data.getProjects[0].projectID, "PRO3");
+            assert.equal(res.body.data.getProjects[0].projectID, "PRO2");
             done();
           });
       });
@@ -497,8 +497,8 @@ describe("Test Projects apis", () => {
             );
 
             assert.equal(res.body.data.getProjects.length, 2);
-            assert.equal(res.body.data.getProjects[0].projectID, "PRO4");
-            assert.equal(res.body.data.getProjects[1].projectID, "PRO2");
+            assert.equal(res.body.data.getProjects[0].projectID, "PRO3");
+            assert.equal(res.body.data.getProjects[1].projectID, "PRO1");
             done();
           });
       });
@@ -534,7 +534,7 @@ describe("Test Projects apis", () => {
             );
 
             assert.equal(res.body.data.getProjects.length, 1);
-            assert.equal(res.body.data.getProjects[0].projectID, "PRO3");
+            assert.equal(res.body.data.getProjects[0].projectID, "PRO2");
             done();
           });
       });
@@ -565,9 +565,9 @@ describe("Test Projects apis", () => {
             );
 
             assert.equal(res.body.data.getProjects.length, 3);
-            assert.equal(res.body.data.getProjects[0].projectID, "PRO1");
-            assert.equal(res.body.data.getProjects[1].projectID, "PRO2");
-            assert.equal(res.body.data.getProjects[2].projectID, "PRO4");
+            assert.equal(res.body.data.getProjects[0].projectID, "PRO");
+            assert.equal(res.body.data.getProjects[1].projectID, "PRO1");
+            assert.equal(res.body.data.getProjects[2].projectID, "PRO3");
             done();
           });
       });
@@ -596,9 +596,9 @@ describe("Test Projects apis", () => {
             );
 
             assert.equal(res.body.data.getProjects.length, 3);
-            assert.equal(res.body.data.getProjects[0].projectID, "PRO4");
-            assert.equal(res.body.data.getProjects[1].projectID, "PRO2");
-            assert.equal(res.body.data.getProjects[2].projectID, "PRO1");
+            assert.equal(res.body.data.getProjects[0].projectID, "PRO3");
+            assert.equal(res.body.data.getProjects[1].projectID, "PRO1");
+            assert.equal(res.body.data.getProjects[2].projectID, "PRO");
             done();
           });
       });
@@ -634,7 +634,7 @@ describe("Test Projects apis", () => {
           assert.equal(res.body.data.updateProject.ok, 1);
           assert.equal(res.body.data.updateProject.nModified, 1);
 
-          const query = `{getProjects(projectID: "TES", type: inactive) {name, projectID, status, scheduledStartDate, projectOwner}}`;
+          const query = `{getProjects(projectID: "TES", type: inactive) {name, projectID, status, scheduledStartDate, updatedAt, updatedBy, projectOwner}}`;
 
           chai
             .request(server)
@@ -661,6 +661,12 @@ describe("Test Projects apis", () => {
               );
               assert.equal(res1.body.data.getProjects[0].status, "delayed");
               assert.equal(res1.body.data.getProjects[0].projectOwner, "Test Owner123");
+              assert.equal(res1.body.data.getProjects[0].updatedBy, "admin");
+              assert.approximately(
+                new Date(res1.body.data.getProjects[0].updatedAt).getTime(),
+                new Date().getTime(),
+                1000,
+              );
               done();
             });
         });

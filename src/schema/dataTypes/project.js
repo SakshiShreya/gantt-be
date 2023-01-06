@@ -34,6 +34,14 @@ const ProjectType = new GraphQLObjectType({
       type: GraphQLString,
       description: description.createdBy,
     },
+    updatedAt: {
+      type: DateType,
+      description: description.updatedAt,
+    },
+    updatedBy: {
+      type: GraphQLString,
+      description: description.updatedBy,
+    },
     scheduledStartDate: {
       type: new GraphQLNonNull(DateType),
       description: description.scheduledStartDate,

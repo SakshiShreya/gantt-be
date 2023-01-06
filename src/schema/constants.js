@@ -5,6 +5,8 @@ export const description = {
   desc: "Description of the project",
   createdAt: "Date when the project was created",
   createdBy: "User who created the project",
+  updatedAt: "Date when the project was last updated",
+  updatedBy: "User who last updated the project",
   scheduledStartDate: "Date when the project is expected to start",
   scheduledEndDate: "Date when the project is expected to end",
   actualStartDate: "Date when the project actually started",
