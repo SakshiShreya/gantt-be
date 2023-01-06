@@ -4,6 +4,7 @@ import chaiHttp from "chai-http";
 import { add, sub } from "date-fns";
 import server from "../../testServer.js";
 import Project from "../../models/projectModel.js";
+import logger, { Type } from "../../utils/logger.js";
 
 chai.use(chaiHttp);
 
@@ -13,7 +14,7 @@ describe("Test Projects apis", () => {
       createProject(name: "Test Project", scheduledStartDate: "${add(
         new Date(),
         { days: 10 },
-      ).toJSON()}", address: {address1: "Test Address 1", city: "Bangalore", state: "KARNATAKA", pinCode: 560093}, desc: "Testing a project") {
+      ).toJSON()}", address: {address1: "Test Address 1", city: "Bangalore", state: "KARNATAKA", pinCode: 560093}, desc: "Testing a project", projectOwner: "Test Owner") {
         id, name, projectID, status, createdAt, createdBy, updatedAt, updatedBy
       }
     }`;
@@ -23,6 +24,13 @@ describe("Test Projects apis", () => {
         .post("/graphql")
         .send({ query: testProject })
         .end((err, res) => {
+          if (res.status !== 200) {
+            logger({
+              code: res.status,
+              description: res.body.errors,
+              type: Type.error,
+            });
+          }
           assert.equal(res.status, 200);
           assert.isDefined(res.body.data, "Data should be present");
           assert.isDefined(
@@ -69,6 +77,13 @@ describe("Test Projects apis", () => {
         .post("/graphql")
         .send({ query: testProject })
         .end((err, res) => {
+          if (res.status !== 200) {
+            logger({
+              code: res.status,
+              description: res.body.errors,
+              type: Type.error,
+            });
+          }
           assert.equal(res.status, 200);
           assert.isDefined(res.body.data, "Data should be present");
           assert.isDefined(
@@ -102,7 +117,7 @@ describe("Test Projects apis", () => {
       let query = `mutation {createProject(name: "Project abc 1", scheduledStartDate: "${add(
         new Date(),
         { days: 10 },
-      )}", address: {address1: "ABC", city: "Bangalore", state: "KARNATAKA", pinCode: 560093}, desc: "Testing a project") {id}}`;
+      )}", address: {address1: "ABC", city: "Bangalore", state: "KARNATAKA", pinCode: 560093}, desc: "Testing a project", projectOwner: "Test Owner1") {id}}`;
       await chai.request(server).post("/graphql").send({ query });
       query = `mutation{updateProject(projectID: "PRO", status: started){ok}}`;
       await chai.request(server).post("/graphql").send({ query });
@@ -114,7 +129,7 @@ describe("Test Projects apis", () => {
       query = `mutation {createProject(name: "Project 2", scheduledStartDate: "${sub(
         new Date(),
         { days: 10 },
-      )}", address: {address1: "ABC", city: "Bangalore", state: "KARNATAKA", pinCode: 560093}, desc: "Testing a project") {id}}`;
+      )}", address: {address1: "ABC", city: "Bangalore", state: "KARNATAKA", pinCode: 560093}, desc: "Testing a project", projectOwner: "Test Owner2") {id}}`;
       await chai.request(server).post("/graphql").send({ query });
       query = `mutation{updateProject(projectID: "PRO1", status: started){ok}}`;
       await chai.request(server).post("/graphql").send({ query });
@@ -127,14 +142,14 @@ describe("Test Projects apis", () => {
       query = `mutation {createProject(name: "Project 2", scheduledStartDate: "${sub(
         new Date(),
         { days: 10 },
-      )}", address: {address1: "ABC", city: "Bangalore", state: "KARNATAKA", pinCode: 560093}, desc: "Testing a project") {id}}`;
+      )}", address: {address1: "ABC", city: "Bangalore", state: "KARNATAKA", pinCode: 560093}, desc: "Testing a project", projectOwner: "Test Owner1") {id}}`;
       await chai.request(server).post("/graphql").send({ query });
 
       // 3. 1 more active project
       query = `mutation {createProject(name: "Project abcd 2", scheduledStartDate: "${sub(
         new Date(),
         { days: 10 },
-      )}", address: {address1: "ABC", city: "Bangalore", state: "KARNATAKA", pinCode: 560093}, desc: "Testing a project") {id}}`;
+      )}", address: {address1: "ABC", city: "Bangalore", state: "KARNATAKA", pinCode: 560093}, desc: "Testing a project", projectOwner: "Test Owner2") {id}}`;
       await chai.request(server).post("/graphql").send({ query });
       query = `mutation{updateProject(projectID: "PRO3", status: started){ok}}`;
       await chai.request(server).post("/graphql").send({ query });
@@ -167,6 +182,7 @@ describe("Test Projects apis", () => {
             state
             pinCode
           }
+          projectOwner
         }
       }`;
 
@@ -176,6 +192,13 @@ describe("Test Projects apis", () => {
         .set("Content-Type", "application/json")
         .set("Accept", "application/json")
         .end((err, res) => {
+          if (res.status !== 200) {
+            logger({
+              code: res.status,
+              description: res.body.errors,
+              type: Type.error,
+            });
+          }
           assert.equal(res.status, 200);
           assert.isDefined(res.body.data, "Data should be present");
           assert.isDefined(
@@ -250,6 +273,7 @@ describe("Test Projects apis", () => {
             ),
             true,
           );
+          assert.equal(res.body.data.getProjects[0].projectOwner, "Test Owner2");
           done();
         });
     });
@@ -263,6 +287,13 @@ describe("Test Projects apis", () => {
         .set("Content-Type", "application/json")
         .set("Accept", "application/json")
         .end((err, res) => {
+          if (res.status !== 200) {
+            logger({
+              code: res.status,
+              description: res.body.errors,
+              type: Type.error,
+            });
+          }
           assert.equal(res.status, 200);
           assert.isDefined(res.body.data, "Data should be present");
           assert.isDefined(
@@ -294,6 +325,13 @@ describe("Test Projects apis", () => {
         .set("Content-Type", "application/json")
         .set("Accept", "application/json")
         .end((err, res) => {
+          if (res.status !== 200) {
+            logger({
+              code: res.status,
+              description: res.body.errors,
+              type: Type.error,
+            });
+          }
           assert.equal(res.status, 200);
           assert.isDefined(res.body.data, "Data should be present");
           assert.isDefined(
@@ -318,6 +356,13 @@ describe("Test Projects apis", () => {
           .set("Content-Type", "application/json")
           .set("Accept", "application/json")
           .end((err, res) => {
+            if (res.status !== 200) {
+              logger({
+                code: res.status,
+                description: res.body.errors,
+                type: Type.error,
+              });
+            }
             assert.equal(res.status, 200);
             assert.isDefined(res.body.data, "Data should be present");
             assert.isDefined(
@@ -340,6 +385,13 @@ describe("Test Projects apis", () => {
           .set("Content-Type", "application/json")
           .set("Accept", "application/json")
           .end((err, res) => {
+            if (res.status !== 200) {
+              logger({
+                code: res.status,
+                description: res.body.errors,
+                type: Type.error,
+              });
+            }
             assert.equal(res.status, 200);
             assert.isDefined(res.body.data, "Data should be present");
             assert.isDefined(
@@ -365,6 +417,13 @@ describe("Test Projects apis", () => {
           .set("Content-Type", "application/json")
           .set("Accept", "application/json")
           .end((err, res) => {
+            if (res.status !== 200) {
+              logger({
+                code: res.status,
+                description: res.body.errors,
+                type: Type.error,
+              });
+            }
             assert.equal(res.status, 200);
             assert.isDefined(res.body.data, "Data should be present");
             assert.isDefined(
@@ -388,6 +447,13 @@ describe("Test Projects apis", () => {
           .set("Content-Type", "application/json")
           .set("Accept", "application/json")
           .end((err, res) => {
+            if (res.status !== 200) {
+              logger({
+                code: res.status,
+                description: res.body.errors,
+                type: Type.error,
+              });
+            }
             assert.equal(res.status, 200);
             assert.isDefined(res.body.data, "Data should be present");
             assert.isDefined(
@@ -416,6 +482,13 @@ describe("Test Projects apis", () => {
           .set("Content-Type", "application/json")
           .set("Accept", "application/json")
           .end((err, res) => {
+            if (res.status !== 200) {
+              logger({
+                code: res.status,
+                description: res.body.errors,
+                type: Type.error,
+              });
+            }
             assert.equal(res.status, 200);
             assert.isDefined(res.body.data, "Data should be present");
             assert.isDefined(
@@ -446,6 +519,13 @@ describe("Test Projects apis", () => {
           .set("Content-Type", "application/json")
           .set("Accept", "application/json")
           .end((err, res) => {
+            if (res.status !== 200) {
+              logger({
+                code: res.status,
+                description: res.body.errors,
+                type: Type.error,
+              });
+            }
             assert.equal(res.status, 200);
             assert.isDefined(res.body.data, "Data should be present");
             assert.isDefined(
@@ -470,6 +550,13 @@ describe("Test Projects apis", () => {
           .set("Content-Type", "application/json")
           .set("Accept", "application/json")
           .end((err, res) => {
+            if (res.status !== 200) {
+              logger({
+                code: res.status,
+                description: res.body.errors,
+                type: Type.error,
+              });
+            }
             assert.equal(res.status, 200);
             assert.isDefined(res.body.data, "Data should be present");
             assert.isDefined(
@@ -494,6 +581,13 @@ describe("Test Projects apis", () => {
           .set("Content-Type", "application/json")
           .set("Accept", "application/json")
           .end((err, res) => {
+            if (res.status !== 200) {
+              logger({
+                code: res.status,
+                description: res.body.errors,
+                type: Type.error,
+              });
+            }
             assert.equal(res.status, 200);
             assert.isDefined(res.body.data, "Data should be present");
             assert.isDefined(
@@ -517,13 +611,20 @@ describe("Test Projects apis", () => {
         updateProject(projectID: "TES", name: "Test Project100", scheduledStartDate: "${sub(
           new Date(),
           { days: 10 },
-        ).toJSON()}") { ok, nModified }
+        ).toJSON()}", projectOwner: "Test Owner123") { ok, nModified }
       }`;
       chai
         .request(server)
         .post("/graphql")
         .send({ query: testProject })
         .end((err, res) => {
+          if (res.status !== 200) {
+            logger({
+              code: res.status,
+              description: res.body.errors,
+              type: Type.error,
+            });
+          }
           assert.equal(res.status, 200);
           assert.isDefined(res.body.data, "Data should be present");
           assert.isDefined(
@@ -533,7 +634,7 @@ describe("Test Projects apis", () => {
           assert.equal(res.body.data.updateProject.ok, 1);
           assert.equal(res.body.data.updateProject.nModified, 1);
 
-          const query = `{getProjects(projectID: "TES", type: inactive) {name, projectID, status, scheduledStartDate, updatedAt, updatedBy}}`;
+          const query = `{getProjects(projectID: "TES", type: inactive) {name, projectID, status, scheduledStartDate, updatedAt, updatedBy, projectOwner}}`;
 
           chai
             .request(server)
@@ -559,6 +660,7 @@ describe("Test Projects apis", () => {
                 "Project status should be present",
               );
               assert.equal(res1.body.data.getProjects[0].status, "delayed");
+              assert.equal(res1.body.data.getProjects[0].projectOwner, "Test Owner123");
               assert.equal(res1.body.data.getProjects[0].updatedBy, "admin");
               assert.approximately(
                 new Date(res1.body.data.getProjects[0].updatedAt).getTime(),
@@ -580,6 +682,13 @@ describe("Test Projects apis", () => {
         .post("/graphql")
         .send({ query: testProject })
         .end((err, res) => {
+          if (res.status !== 200) {
+            logger({
+              code: res.status,
+              description: res.body.errors,
+              type: Type.error,
+            });
+          }
           assert.equal(res.status, 200);
           assert.isDefined(res.body.data, "Data should be present");
           assert.isDefined(
@@ -637,6 +746,13 @@ describe("Test Projects apis", () => {
         .post("/graphql")
         .send({ query: testProject })
         .end((err, res) => {
+          if (res.status !== 200) {
+            logger({
+              code: res.status,
+              description: res.body.errors,
+              type: Type.error,
+            });
+          }
           assert.equal(res.status, 200);
           assert.isDefined(res.body.data, "Data should be present");
           assert.isDefined(
@@ -691,6 +807,13 @@ describe("Test Projects apis", () => {
         .post("/graphql")
         .send({ query: testProject })
         .end((err, res) => {
+          if (res.status !== 200) {
+            logger({
+              code: res.status,
+              description: res.body.errors,
+              type: Type.error,
+            });
+          }
           assert.equal(res.status, 200);
           assert.isDefined(res.body.data, "Data should be present");
           assert.isDefined(
@@ -745,6 +868,13 @@ describe("Test Projects apis", () => {
         .post("/graphql")
         .send({ query: testProject })
         .end((err, res) => {
+          if (res.status !== 200) {
+            logger({
+              code: res.status,
+              description: res.body.errors,
+              type: Type.error,
+            });
+          }
           assert.equal(res.status, 200);
           assert.isDefined(res.body.data, "Data should be present");
           assert.isDefined(

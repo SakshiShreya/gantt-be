@@ -38,10 +38,15 @@ export const createProject = {
       type: new GraphQLNonNull(AddressInputType),
       description: description.address,
     },
+    projectOwner: {
+      type: new GraphQLNonNull(GraphQLString),
+      description: description.projectOwner,
+    },
   },
   async resolve(parent, args) {
     try {
-      const { name, desc, scheduledStartDate, status, address } = args;
+      const { name, desc, scheduledStartDate, status, address, projectOwner } =
+        args;
       let projectID = name.replace(/\s/g, "").slice(0, 3).toUpperCase();
 
       // get the latest project that has the same projectID
@@ -66,6 +71,7 @@ export const createProject = {
         scheduledStartDate,
         createdBy: "admin",
         updatedBy: "admin",
+        projectOwner,
         status,
         address,
       });
@@ -220,11 +226,22 @@ export const updateProject = {
       type: AddressInputType,
       description: description.address,
     },
+    projectOwner: {
+      type: GraphQLString,
+      description: description.projectOwner,
+    },
   },
   async resolve(parent, args) {
     try {
-      const { projectID, name, desc, scheduledStartDate, status, address } =
-        args;
+      const {
+        projectID,
+        name,
+        desc,
+        scheduledStartDate,
+        status,
+        address,
+        projectOwner,
+      } = args;
 
       const project = await Project.findOne(
         { projectID },
@@ -247,6 +264,9 @@ export const updateProject = {
       }
       if (address) {
         update.address = address;
+      }
+      if (projectOwner) {
+        update.projectOwner = projectOwner;
       }
 
       if (status === "started" && !project.actualStartDate) {
