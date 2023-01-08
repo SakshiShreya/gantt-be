@@ -21,21 +21,22 @@ export const Type = {
 export default function logger(params) {
   const rawParams = JSON.parse(JSON.stringify(params));
 
-  const trace = stackTrace.get()[1];
-  const path = trace.getFileName();
-  const file = path ? path.split("/").pop() : "";
-  const method = trace.getFunctionName();
-  const line = trace.getLineNumber();
+  let { stack } = rawParams;
+
+  if (!stack) {
+    try {
+      stack = stackTrace.parse();
+    } catch (e) {
+      stack = undefined;
+    }
+  }
 
   const logData = {
     code: rawParams.code,
     description: rawParams.description,
     type: rawParams.type,
     ref: rawParams.ref,
-    path,
-    file,
-    method,
-    line,
+    stack,
     ts: new Date().toISOString(),
   };
 

@@ -46,13 +46,17 @@ const ProjectType = new GraphQLObjectType({
       type: new GraphQLNonNull(DateType),
       description: description.scheduledStartDate,
     },
-    scheduledEndDate: {
-      type: new GraphQLNonNull(DateType),
-      description: description.scheduledEndDate,
-    },
     actualStartDate: {
       type: DateType,
       description: description.actualStartDate,
+    },
+    scheduledEndDate: {
+      type: DateType,
+      description: description.scheduledEndDate,
+    },
+    expectedEndDate: {
+      type: new GraphQLNonNull(DateType),
+      description: description.expectedEndDate,
     },
     actualEndDate: {
       type: DateType,

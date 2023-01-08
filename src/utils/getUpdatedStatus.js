@@ -12,7 +12,16 @@ export default function getUpdatedStatus(project) {
     project.status = "delayed";
     return project;
   }
-  // If any task is delayed
+  // if project has started and expectedEndDate is after scheduledEndDate (any task got delayed)
+  if (
+    project.status === "started" &&
+    new Date(project.expectedEndDate) > new Date(project.scheduledEndDate)
+  ) {
+    project.status = "delayed";
+    return project;
+  }
+  // If any task is delayed (see if this part needs to be done)
+  // handle the case if expectedEndDate is not present in project, this will happen if expected end dat is not calculated yet
 
   // 2. Completed
   // If all tasks are completed

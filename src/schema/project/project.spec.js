@@ -171,8 +171,9 @@ describe("Test Projects apis", () => {
           updatedAt
           updatedBy
           scheduledStartDate
-          scheduledEndDate
           actualStartDate
+          scheduledEndDate
+          expectedEndDate
           actualEndDate
           status
           address {
@@ -243,6 +244,14 @@ describe("Test Projects apis", () => {
             "scheduledEndDate should be present",
           );
           assert.isDefined(
+            res.body.data.getProjects[0].expectedEndDate,
+            "expectedEndDate should be present",
+          );
+          assert.isNull(
+            res.body.data.getProjects[0].actualEndDate,
+            "actualEndDate should not be present",
+          )
+          assert.isDefined(
             res.body.data.getProjects[0].address,
             "address should be present",
           );
@@ -273,13 +282,19 @@ describe("Test Projects apis", () => {
             ),
             true,
           );
-          assert.equal(res.body.data.getProjects[0].projectOwner, "Test Owner2");
+          // since 'PRO' will start 10 days after today, and expected end date is 1 month after actual start date
+          // but scheduled start date is 1 month after today, so it will be delayed
+          assert.equal(res.body.data.getProjects[2].status, "delayed", "project[2] should be delayed");
+          assert.equal(
+            res.body.data.getProjects[0].projectOwner,
+            "Test Owner2",
+          );
           done();
         });
     });
 
     it("should get all inactive projects, sorted on -_id", (done) => {
-      const query = `{getProjects(type: inactive) {projectID, status}}`;
+      const query = `{getProjects(type: inactive) {projectID, status, scheduledStartDate, actualStartDate, scheduledEndDate, expectedEndDate, actualEndDate}}`;
 
       chai
         .request(server)
@@ -312,6 +327,26 @@ describe("Test Projects apis", () => {
             ),
             true,
           );
+          assert.isDefined(
+            res.body.data.getProjects[0].scheduledStartDate,
+            "scheduledStartDate should be present",
+          );
+          assert.isNull(
+            res.body.data.getProjects[0].actualStartDate,
+            "actualStartDate should not be present in inactive projects",
+          );
+          assert.isNull(
+            res.body.data.getProjects[0].scheduledEndDate,
+            "scheduledEndDate should not be present",
+          );
+          assert.isDefined(
+            res.body.data.getProjects[0].expectedEndDate,
+            "expectedEndDate should be present",
+          );
+          assert.isNull(
+            res.body.data.getProjects[0].actualEndDate,
+            "actualEndDate should not be present",
+          )
           done();
         });
     });
@@ -660,7 +695,10 @@ describe("Test Projects apis", () => {
                 "Project status should be present",
               );
               assert.equal(res1.body.data.getProjects[0].status, "delayed");
-              assert.equal(res1.body.data.getProjects[0].projectOwner, "Test Owner123");
+              assert.equal(
+                res1.body.data.getProjects[0].projectOwner,
+                "Test Owner123",
+              );
               assert.equal(res1.body.data.getProjects[0].updatedBy, "admin");
               assert.approximately(
                 new Date(res1.body.data.getProjects[0].updatedAt).getTime(),
@@ -673,7 +711,7 @@ describe("Test Projects apis", () => {
     });
 
     let actualStartDate;
-    it("should set actualStartDate to current time if status is set to started for the first time", (done) => {
+    it("should set actualStartDate to current time and scheduledEndDate if status is set to started for the first time", (done) => {
       const testProject = `mutation {
         updateProject(projectID: "TES", status: started) { ok, nModified }
       }`;
@@ -698,7 +736,7 @@ describe("Test Projects apis", () => {
           assert.equal(res.body.data.updateProject.ok, 1);
           assert.equal(res.body.data.updateProject.nModified, 1);
 
-          const query = `{getProjects(projectID: "TES") {projectID, status, actualStartDate, actualEndDate}}`;
+          const query = `{getProjects(projectID: "TES") {projectID, status, actualStartDate, scheduledEndDate, actualEndDate}}`;
 
           chai
             .request(server)
@@ -727,6 +765,10 @@ describe("Test Projects apis", () => {
                 new Date().getTime(),
                 1000,
               );
+              assert.isDefined(
+                res1.body.data.getProjects[0].scheduledEndDate,
+                "Project scheduledEndDate should be present",
+              );
               ({ actualStartDate } = res1.body.data.getProjects[0]);
               assert.isNull(
                 res1.body.data.getProjects[0].actualEndDate,
@@ -735,6 +777,32 @@ describe("Test Projects apis", () => {
               done();
             });
         });
+    });
+
+    it("should not let user to update scheduledStartDate after project has started", (done) => {
+      const testProject = `mutation {
+        updateProject(projectID: "TES", scheduledStartDate: "${add(new Date(), {days: 1}).toJSON()}") { ok nModified }
+      }`;
+      chai
+        .request(server)
+        .post("/graphql")
+        .send({ query: testProject })
+        .end((err, res) => {
+          if (res.status !== 200) {
+            logger({
+              code: res.status,
+              description: res.body.errors,
+              type: Type.error,
+            });
+          }
+          assert.equal(res.status, 200);
+          assert.isDefined(res.body.data, "Data should be present");
+          assert.isNull(res.body.data.updateProject, "Project should not be present");
+          assert.isDefined(res.body.errors, "Errors should be present");
+          assert.equal(res.body.errors[0].message, "Error: Can't update scheduledStartDate after project has started.");
+          done();
+        });
+          
     });
 
     it("should set project to hold without affecting actualStartDate", (done) => {
@@ -957,8 +1025,8 @@ describe("Test Projects apis", () => {
               done();
             });
         });
-    })
-  })
+    });
+  });
 
   after((done) => {
     Project.db.dropCollection("projects", () => {
