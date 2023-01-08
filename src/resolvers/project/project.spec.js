@@ -109,7 +109,7 @@ describe("Test Projects apis", () => {
     });
   });
 
-  describe("Test READ Functionality", () => {
+  describe("Test READ All Functionality", () => {
     before(async () => {
       // create more projects
 
@@ -250,7 +250,7 @@ describe("Test Projects apis", () => {
           assert.isNull(
             res.body.data.getProjects[0].actualEndDate,
             "actualEndDate should not be present",
-          )
+          );
           assert.isDefined(
             res.body.data.getProjects[0].address,
             "address should be present",
@@ -284,7 +284,11 @@ describe("Test Projects apis", () => {
           );
           // since 'PRO' will start 10 days after today, and expected end date is 1 month after actual start date
           // but scheduled start date is 1 month after today, so it will be delayed
-          assert.equal(res.body.data.getProjects[2].status, "delayed", "project[2] should be delayed");
+          assert.equal(
+            res.body.data.getProjects[2].status,
+            "delayed",
+            "project[2] should be delayed",
+          );
           assert.equal(
             res.body.data.getProjects[0].projectOwner,
             "Test Owner2",
@@ -346,7 +350,7 @@ describe("Test Projects apis", () => {
           assert.isNull(
             res.body.data.getProjects[0].actualEndDate,
             "actualEndDate should not be present",
-          )
+          );
           done();
         });
     });
@@ -640,6 +644,61 @@ describe("Test Projects apis", () => {
     });
   });
 
+  describe("Test READ Functionality", () => {
+    it("should get a project successfully if correct projectID is passes", (done) => {
+      const query = `{getProject(projectID: "PRO") {projectID, name}}`;
+
+      chai
+        .request(server)
+        .get(`/graphql?query=${query}`)
+        .set("Content-Type", "application/json")
+        .set("Accept", "application/json")
+        .end((err, res) => {
+          if (res.status !== 200) {
+            logger({
+              code: res.status,
+              description: res.body.errors,
+              type: Type.error,
+            });
+          }
+          assert.equal(res.status, 200);
+          assert.isDefined(res.body.data, "Data should be present");
+          assert.isDefined(
+            res.body.data.getProject,
+            "Project should be present",
+          );
+          assert.equal(res.body.data.getProject.projectID, "PRO");
+          assert.equal(res.body.data.getProject.name, "Project abc 1");
+          done();
+        });
+    });
+
+    it("should not get a project if incorrect projectID is passed", (done) => {
+      const query = `{getProject(projectID: "PRO123") {projectID, name}}`;
+
+      chai
+        .request(server)
+        .get(`/graphql?query=${query}`)
+        .set("Content-Type", "application/json")
+        .set("Accept", "application/json")
+        .end((err, res) => {
+          if (res.status !== 200) {
+            logger({
+              code: res.status,
+              description: res.body.errors,
+              type: Type.error,
+            });
+          }
+          assert.equal(res.status, 200);
+          assert.isDefined(res.body.data, "Data should be present");
+          assert.isNull(res.body.data.getProject);
+          assert.isDefined(res.body.errors, "Errors should be present");
+          assert.equal(res.body.errors[0].message, "Error: Project not found");
+          done();
+        });
+    });
+  });
+
   describe("Test UPDATE Functionality", () => {
     it("should update a project successfully", (done) => {
       const testProject = `mutation {
@@ -781,7 +840,9 @@ describe("Test Projects apis", () => {
 
     it("should not let user to update scheduledStartDate after project has started", (done) => {
       const testProject = `mutation {
-        updateProject(projectID: "TES", scheduledStartDate: "${add(new Date(), {days: 1}).toJSON()}") { ok nModified }
+        updateProject(projectID: "TES", scheduledStartDate: "${add(new Date(), {
+          days: 1,
+        }).toJSON()}") { ok nModified }
       }`;
       chai
         .request(server)
@@ -797,12 +858,17 @@ describe("Test Projects apis", () => {
           }
           assert.equal(res.status, 200);
           assert.isDefined(res.body.data, "Data should be present");
-          assert.isNull(res.body.data.updateProject, "Project should not be present");
+          assert.isNull(
+            res.body.data.updateProject,
+            "Project should not be present",
+          );
           assert.isDefined(res.body.errors, "Errors should be present");
-          assert.equal(res.body.errors[0].message, "Error: Cannot update scheduledStartDate. Project has already started.");
+          assert.equal(
+            res.body.errors[0].message,
+            "Error: Cannot update scheduledStartDate. Project has already started.",
+          );
           done();
         });
-          
     });
 
     it("should set project to hold without affecting actualStartDate", (done) => {

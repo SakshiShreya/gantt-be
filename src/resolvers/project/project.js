@@ -98,6 +98,20 @@ const projectResolvers = {
         return getGraphQLError(err);
       }
     },
+
+    getProject: async (parent, { projectID }) => {
+      try {
+        const project = await Project.findOne({ projectID, deleted: false });
+
+        if (!project) {
+          throw new AppError("Project not found", 404);
+        }
+
+        return getUpdatedStatus(getExpectedEndDate(project));
+      } catch (err) {
+        return getGraphQLError(err);
+      }
+    }
   },
 
   Mutation: {
@@ -152,7 +166,7 @@ const projectResolvers = {
     ) => {
       try {
         const project = await Project.findOne(
-          { projectID },
+          { projectID, deleted: false },
           "actualStartDate status",
         );
 
