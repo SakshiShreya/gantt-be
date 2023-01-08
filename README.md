@@ -18,7 +18,8 @@ npm run dev
 
 - controllers: contains controllers related to CRUD operations (except grapghql apis)
 - models: contains mongoose models
-- schema: contains graphql schemas
+- resolvers: contains graphql resolvers
+- schemas: contains graphql schemas
 - utils: contains utility functions
 
 ## Environment Variables required to be set

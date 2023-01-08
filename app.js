@@ -1,20 +1,48 @@
 import express from "express";
 import morgan from "morgan";
-// import helmet from "helmet";
+import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import ExpressMongoSanitize from "express-mongo-sanitize";
 import xss from "xss-clean";
 import hpp from "hpp";
 import { graphqlHTTP } from "express-graphql";
+import { makeExecutableSchema } from "@graphql-tools/schema";
+import { loadSchemaSync } from "@graphql-tools/load";
+import { GraphQLFileLoader } from "@graphql-tools/graphql-file-loader";
 import AppError from "./src/utils/appError.js";
 import { errorController } from "./src/controllers/errorController/index.js";
-import schema from "./src/schema/index.js";
+import graphQLResolvers from "./src/resolvers/index.js";
 
 const app = express();
 
-// TODO: THIS IS NOT WORKING WITH GRAPHQL
-// // adds security headers
-// app.use(helmet());
+// Add security headers
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: [
+          "'self'",
+          /** adds graphiql support over helmet's default CSP */
+          "'unsafe-inline'",
+        ],
+        baseUri: ["'self'"],
+        blockAllMixedContent: [],
+        fontSrc: ["'self'", "https:", "data:"],
+        frameAncestors: ["'self'"],
+        imgSrc: ["'self'", "data:"],
+        objectSrc: ["'none'"],
+        scriptSrc: [
+          "'self'",
+          /** adds graphiql support over helmet's default CSP */
+          "'unsafe-inline'",
+          /** adds graphiql support over helmet's default CSP */
+          "'unsafe-eval'",
+        ],
+        upgradeInsecureRequests: [],
+      },
+    },
+  }),
+);
 
 // Logging (only here because heroku has its own logging on prod)
 if (process.env.NODE_ENV === "development") {
@@ -46,6 +74,13 @@ app.use(
     whitelist: [], // these params can be present twice
   }),
 );
+
+const schema = makeExecutableSchema({
+  typeDefs: loadSchemaSync("src/schemas/**/*.graphql", {
+    loaders: [new GraphQLFileLoader()],
+  }),
+  resolvers: graphQLResolvers,
+});
 
 app.use("/graphql", graphqlHTTP({ schema, graphiql: true }));
 app.get("/", (req, res) => {

@@ -799,7 +799,7 @@ describe("Test Projects apis", () => {
           assert.isDefined(res.body.data, "Data should be present");
           assert.isNull(res.body.data.updateProject, "Project should not be present");
           assert.isDefined(res.body.errors, "Errors should be present");
-          assert.equal(res.body.errors[0].message, "Error: Can't update scheduledStartDate after project has started.");
+          assert.equal(res.body.errors[0].message, "Error: Cannot update scheduledStartDate. Project has already started.");
           done();
         });
           
