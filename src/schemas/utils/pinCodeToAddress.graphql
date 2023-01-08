@@ -1,0 +1,12 @@
+type PinToAddr {
+  city: String
+  state: String
+  pinCode: Int
+}
+
+extend type Query {
+  """
+  Get address from pin code
+  """
+  pinCodeToAddress(pinCode: Int!): PinToAddr
+}
