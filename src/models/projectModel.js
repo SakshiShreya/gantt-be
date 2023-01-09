@@ -21,6 +21,7 @@ const projectSchema = new mongoose.Schema({
     type: Date,
     required: [true, "A project must have a start date"],
   },
+  clientName: { type: String, required: true },
   actualStartDate: Date, // this date is defined when user starts a project
   scheduledEndDate: Date, // this date is defined when user starts a project
   actualEndDate: Date, // this date is defined when user closes a project
