@@ -144,6 +144,16 @@ extend type Query {
     """
     page: Int
   ): [Project]
+
+  """
+  Get one project by projectID
+  """
+  getProject(
+    """
+    ProjectId of the project
+    """
+    projectID: String!
+  ): Project
 }
 
 extend type Mutation {
