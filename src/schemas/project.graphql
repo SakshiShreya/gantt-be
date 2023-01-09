@@ -91,6 +91,10 @@ type Project {
   """
   actualEndDate: Date
   """
+  Name of the client
+  """
+  clientName: String!
+  """
   Status of the project (scheduled, inProgress, delayed, completed, closed, onHold)
   """
   status: StatusOutput!
@@ -136,6 +140,10 @@ extend type Query {
     """
     type: ProjectType
     """
+    Name of the client
+    """
+    clientName: String!
+    """
     Sort by field. E.g. sort by name(ascending): name, sort by name(descending): -name
     """
     sort: String
@@ -168,6 +176,10 @@ extend type Mutation {
     """
     address: AddressInput!
     """
+    Name of the client
+    """
+    clientName: String!
+    """
     Project owner of the project
     """
     projectOwner: String!
@@ -193,6 +205,10 @@ extend type Mutation {
     Date when the project is expected to start. Can't be updated after project has started.
     """
     scheduledStartDate: Date
+    """
+    Name of the client
+    """
+    clientName: String!
     """
     Status of the project (scheduled, started, closed, onHold)
     """
