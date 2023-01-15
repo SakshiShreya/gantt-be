@@ -13,6 +13,9 @@ import AppError from "./src/utils/appError.js";
 import { errorController } from "./src/controllers/errorController/index.js";
 import graphQLResolvers from "./src/resolvers/index.js";
 
+// MERN stack
+// Mongo, Express, React, Node
+
 const app = express();
 
 // Add security headers
