@@ -140,10 +140,6 @@ extend type Query {
     """
     type: ProjectType
     """
-    Name of the client
-    """
-    clientName: String!
-    """
     Sort by field. E.g. sort by name(ascending): name, sort by name(descending): -name
     """
     sort: String
@@ -218,7 +214,7 @@ extend type Mutation {
     """
     Name of the client
     """
-    clientName: String!
+    clientName: String
     """
     Status of the project (scheduled, started, closed, onHold)
     """
