@@ -144,8 +144,8 @@ const projectResolvers = {
           scheduledStartDate,
           createdBy: "admin",
           updatedBy: "admin",
-          projectOwner,
           address,
+          projectOwner,
           clientName
         });
       } catch (err) {

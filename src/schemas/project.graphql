@@ -91,10 +91,6 @@ type Project {
   """
   actualEndDate: Date
   """
-  Name of the client
-  """
-  clientName: String!
-  """
   Status of the project (scheduled, inProgress, delayed, completed, closed, onHold)
   """
   status: StatusOutput!
@@ -106,6 +102,10 @@ type Project {
   Project owner of the project
   """
   projectOwner: String!
+  """
+  Name of the client
+  """
+  clientName: String!
 }
 
 extend type Query {
@@ -182,13 +182,13 @@ extend type Mutation {
     """
     address: AddressInput!
     """
-    Name of the client
-    """
-    clientName: String!
-    """
     Project owner of the project
     """
     projectOwner: String!
+    """
+    Name of the client
+    """
+    clientName: String!
   ): Project
 
   """
@@ -212,10 +212,6 @@ extend type Mutation {
     """
     scheduledStartDate: Date
     """
-    Name of the client
-    """
-    clientName: String
-    """
     Status of the project (scheduled, started, closed, onHold)
     """
     status: StatusInput
@@ -227,6 +223,10 @@ extend type Mutation {
     Project owner of the project
     """
     projectOwner: String
+    """
+    Name of the client
+    """
+    clientName: String
   ): Modified
 
   """

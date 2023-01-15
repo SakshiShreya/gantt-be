@@ -276,12 +276,12 @@ describe("Test Projects apis", () => {
             "state should be present",
           );
           assert.isDefined(
-            res.body.data.getProjects[0].clientName,
-            "client name should be present",
-          );
-          assert.isDefined(
             res.body.data.getProjects[0].address.pinCode,
             "pinCode should be present",
+          );
+          assert.isDefined(
+            res.body.data.getProjects[0].clientName,
+            "client name should be present",
           );
           // sorted on -_id
           assert.equal(res.body.data.getProjects[0].projectID, "PRO3");
@@ -359,13 +359,13 @@ describe("Test Projects apis", () => {
             res.body.data.getProjects[0].expectedEndDate,
             "expectedEndDate should be present",
           );
-          assert.isDefined(
-            res.body.data.getProjects[0].clientName,
-            "clientName should be present",
-          );
           assert.isNull(
             res.body.data.getProjects[0].actualEndDate,
             "actualEndDate should not be present",
+          );
+          assert.isDefined(
+            res.body.data.getProjects[0].clientName,
+            "clientName should be present",
           );
           done();
         });
@@ -772,6 +772,11 @@ describe("Test Projects apis", () => {
                 "Project status should be present",
               );
               assert.equal(res1.body.data.getProjects[0].status, "delayed");
+              
+              assert.equal(
+                res1.body.data.getProjects[0].projectOwner,
+                "Test Owner123",
+              );
               assert.isDefined(
                 res1.body.data.getProjects[0].clientName,
                 "Client name should be present",
@@ -779,10 +784,6 @@ describe("Test Projects apis", () => {
               assert.equal(
                 res1.body.data.getProjects[0].clientName,
                 "sakshi shreya",
-              );
-              assert.equal(
-                res1.body.data.getProjects[0].projectOwner,
-                "Test Owner123",
               );
               assert.equal(res1.body.data.getProjects[0].updatedBy, "admin");
               assert.approximately(
@@ -839,16 +840,11 @@ describe("Test Projects apis", () => {
                 "Project status should be present",
               );
               assert.equal(res1.body.data.getProjects[0].status, "inProgress");
-              assert.equal(res1.body.data.getProjects[0].clientName, "sakshi shreya");
-              assert.isDefined(
-                res1.body.data.getProjects[0].clientName,
-                "Project client name should be present",
-              );
               assert.isDefined(
                 res1.body.data.getProjects[0].actualStartDate,
                 "Project actualStartDate should be present",
               );
-              
+
               assert.approximately(
                 new Date(
                   res1.body.data.getProjects[0].actualStartDate,
@@ -864,6 +860,14 @@ describe("Test Projects apis", () => {
               assert.isNull(
                 res1.body.data.getProjects[0].actualEndDate,
                 "Project actualEndDate should not be present",
+              );
+              assert.equal(
+                res1.body.data.getProjects[0].clientName,
+                "sakshi shreya",
+              );
+              assert.isDefined(
+                res1.body.data.getProjects[0].clientName,
+                "Project client name should be present",
               );
               done();
             });
@@ -1008,11 +1012,6 @@ describe("Test Projects apis", () => {
               );
               assert.equal(res1.body.data.getProjects[0].status, "inProgress");
               assert.isDefined(
-                res1.body.data.getProjects[0].clientName,
-                "Project client name should be present",
-              );
-              assert.equal(res1.body.data.getProjects[0].clientName, "sakshi shreya");
-              assert.isDefined(
                 res1.body.data.getProjects[0].actualStartDate,
                 "Project actualStartDate should be present",
               );
@@ -1024,6 +1023,14 @@ describe("Test Projects apis", () => {
               assert.isNull(
                 res1.body.data.getProjects[0].actualEndDate,
                 "Project actualEndDate should not be present",
+              );              
+              assert.isDefined(
+                res1.body.data.getProjects[0].clientName,
+                "Project client name should be present",
+              );
+              assert.equal(
+                res1.body.data.getProjects[0].clientName,
+                "sakshi shreya",
               );
               done();
             });
@@ -1076,13 +1083,7 @@ describe("Test Projects apis", () => {
               assert.isDefined(
                 res1.body.data.getProjects[0].actualStartDate,
                 "Project actualStartDate should be present",
-              );
-              assert.isDefined(
-                res1.body.data.getProjects[0].clientName,
-                "Project client name should be present",
-              );
-              assert.equal(res1.body.data.getProjects[0].clientName, "sakshi shreya");
-              
+              ); 
               assert.equal(
                 res1.body.data.getProjects[0].actualStartDate,
                 actualStartDate,
@@ -1096,6 +1097,14 @@ describe("Test Projects apis", () => {
                 new Date(res1.body.data.getProjects[0].actualEndDate).getTime(),
                 new Date().getTime(),
                 1000,
+              );
+              assert.isDefined(
+                res1.body.data.getProjects[0].clientName,
+                "Project client name should be present",
+              );
+              assert.equal(
+                res1.body.data.getProjects[0].clientName,
+                "sakshi shreya",
               );
               done();
             });
