@@ -40,6 +40,10 @@ const projectSchema = new mongoose.Schema({
   deleted: { type: Boolean, default: false, select: false },
 });
 
+projectSchema.index({ projectID: 1, status: 1, deleted: 1 });
+projectSchema.index({ projectID: 1, deleted: 1 });
+projectSchema.index({ projectID: 1 });
+
 // this adds createdAt and updatedAt fields to the schema
 projectSchema.set("timestamps", true);
 
