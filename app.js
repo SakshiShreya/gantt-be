@@ -9,6 +9,7 @@ import { graphqlHTTP } from "express-graphql";
 import { makeExecutableSchema } from "@graphql-tools/schema";
 import { loadSchemaSync } from "@graphql-tools/load";
 import { GraphQLFileLoader } from "@graphql-tools/graphql-file-loader";
+import cors from "cors";
 import AppError from "./src/utils/appError.js";
 import { errorController } from "./src/controllers/errorController/index.js";
 import graphQLResolvers from "./src/resolvers/index.js";
@@ -17,6 +18,8 @@ import graphQLResolvers from "./src/resolvers/index.js";
 // Mongo, Express, React, Node
 
 const app = express();
+
+app.use(cors());
 
 // Add security headers
 app.use(
