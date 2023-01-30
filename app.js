@@ -14,6 +14,7 @@ import AppError from "./src/utils/appError.js";
 import { errorController } from "./src/controllers/errorController/index.js";
 import graphQLResolvers from "./src/resolvers/index.js";
 import projectRouter from "./src/routes/projectRoutes.js";
+import pinCodeToAddressRouter from "./src/routes/pinCodeToAddress.js";
 
 // MERN stack
 // Mongo, Express, React, Node
@@ -69,6 +70,7 @@ app.get("/", (req, res) => {
 });
 
 // all routes here
+app.use("/api/pinCodeToAddress", pinCodeToAddressRouter);
 app.use("/api/projects", projectRouter);
 
 // 404 route
