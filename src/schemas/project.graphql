@@ -101,11 +101,11 @@ type Project {
   """
   Project owner of the project
   """
-  projectOwner: String!
+  owner: String!
   """
   Name of the client
   """
-  clientName: String!
+  client: String!
 }
 
 extend type Query {
@@ -184,11 +184,11 @@ extend type Mutation {
     """
     Project owner of the project
     """
-    projectOwner: String!
+    owner: String!
     """
     Name of the client
     """
-    clientName: String!
+    client: String!
   ): Project
 
   """
@@ -222,11 +222,11 @@ extend type Mutation {
     """
     Project owner of the project
     """
-    projectOwner: String
+    owner: String
     """
     Name of the client
     """
-    clientName: String
+    client: String
   ): Modified
 
   """
