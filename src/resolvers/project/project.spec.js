@@ -15,8 +15,8 @@ describe("Test Projects apis", () => {
       createProject(name: "Test Project", scheduledStartDate: "${add(
         new Date(),
         { days: 10 },
-      ).toJSON()}", address: {address1: "Test Address 1", city: "Bangalore", state: "KARNATAKA", pinCode: 560093}, desc: "Testing a project", projectOwner: "Test Owner", clientName: "Sakshi") {
-        id, name, projectID, status, createdAt, createdBy, updatedAt, updatedBy, clientName
+      ).toJSON()}", address: {address1: "Test Address 1", city: "Bangalore", state: "KARNATAKA", pinCode: 560093}, desc: "Testing a project", owner: "Test Owner", client: "Sakshi") {
+        id, name, projectID, status, createdAt, createdBy, updatedAt, updatedBy, client
       }
     }`;
     it("should create a project successfully", (done) => {
@@ -57,10 +57,10 @@ describe("Test Projects apis", () => {
             "Status should be scheduled by default",
           );
           assert.isDefined(
-            res.body.data.createProject.clientName,
+            res.body.data.createProject.client,
             "Client name should be present",
           );
-          assert.equal(res.body.data.createProject.clientName, "Sakshi");
+          assert.equal(res.body.data.createProject.client, "Sakshi");
           assert.approximately(
             new Date(res.body.data.createProject.createdAt).getTime(),
             new Date().getTime(),
@@ -124,7 +124,7 @@ describe("Test Projects apis", () => {
       let query = `mutation {createProject(name: "Project abc 1", scheduledStartDate: "${add(
         new Date(),
         { days: 10 },
-      )}", address: {address1: "ABC", city: "Bangalore", state: "KARNATAKA", pinCode: 560093}, desc: "Testing a project", projectOwner: "Test Owner1", clientName: "krishna") {id}}`;
+      )}", address: {address1: "ABC", city: "Bangalore", state: "KARNATAKA", pinCode: 560093}, desc: "Testing a project", owner: "Test Owner1", client: "krishna") {id}}`;
       await chai.request(server).post("/graphql").send({ query });
       query = `mutation{updateProject(projectID: "PRO", status: started){ok}}`;
       await chai.request(server).post("/graphql").send({ query });
@@ -136,7 +136,7 @@ describe("Test Projects apis", () => {
       query = `mutation {createProject(name: "Project 2", scheduledStartDate: "${sub(
         new Date(),
         { days: 10 },
-      )}", address: {address1: "ABC", city: "Bangalore", state: "KARNATAKA", pinCode: 560093}, desc: "Testing a project", projectOwner: "Test Owner2", clientName: "krishna") {id}}`;
+      )}", address: {address1: "ABC", city: "Bangalore", state: "KARNATAKA", pinCode: 560093}, desc: "Testing a project", owner: "Test Owner2", client: "krishna") {id}}`;
       await chai.request(server).post("/graphql").send({ query });
       query = `mutation{updateProject(projectID: "PRO1", status: started){ok}}`;
       await chai.request(server).post("/graphql").send({ query });
@@ -149,14 +149,14 @@ describe("Test Projects apis", () => {
       query = `mutation {createProject(name: "Project 2", scheduledStartDate: "${sub(
         new Date(),
         { days: 10 },
-      )}", address: {address1: "ABC", city: "Bangalore", state: "KARNATAKA", pinCode: 560093}, desc: "Testing a project", projectOwner: "Test Owner1", clientName: "krishna") {id}}`;
+      )}", address: {address1: "ABC", city: "Bangalore", state: "KARNATAKA", pinCode: 560093}, desc: "Testing a project", owner: "Test Owner1", client: "krishna") {id}}`;
       await chai.request(server).post("/graphql").send({ query });
 
       // 3. 1 more active project
       query = `mutation {createProject(name: "Project abcd 2", scheduledStartDate: "${sub(
         new Date(),
         { days: 10 },
-      )}", address: {address1: "ABC", city: "Bangalore", state: "KARNATAKA", pinCode: 560093}, desc: "Testing a project", projectOwner: "Test Owner2", clientName: "krishna") {id}}`;
+      )}", address: {address1: "ABC", city: "Bangalore", state: "KARNATAKA", pinCode: 560093}, desc: "Testing a project", owner: "Test Owner2", client: "krishna") {id}}`;
       await chai.request(server).post("/graphql").send({ query });
       query = `mutation{updateProject(projectID: "PRO3", status: started){ok}}`;
       await chai.request(server).post("/graphql").send({ query });
@@ -190,8 +190,8 @@ describe("Test Projects apis", () => {
             state
             pinCode
           }
-          projectOwner
-          clientName
+          owner
+          client
         }
       }`;
 
@@ -280,7 +280,7 @@ describe("Test Projects apis", () => {
             "pinCode should be present",
           );
           assert.isDefined(
-            res.body.data.getProjects[0].clientName,
+            res.body.data.getProjects[0].client,
             "client name should be present",
           );
           // sorted on -_id
@@ -301,16 +301,13 @@ describe("Test Projects apis", () => {
             "delayed",
             "project[2] should be delayed",
           );
-          assert.equal(
-            res.body.data.getProjects[0].projectOwner,
-            "Test Owner2",
-          );
+          assert.equal(res.body.data.getProjects[0].owner, "Test Owner2");
           done();
         });
     });
 
     it("should get all inactive projects, sorted on -_id", (done) => {
-      const query = `{getProjects(type: inactive) {projectID, status, scheduledStartDate, actualStartDate, scheduledEndDate, expectedEndDate, actualEndDate, clientName}}`;
+      const query = `{getProjects(type: inactive) {projectID, status, scheduledStartDate, actualStartDate, scheduledEndDate, expectedEndDate, actualEndDate, client}}`;
 
       chai
         .request(server)
@@ -364,8 +361,8 @@ describe("Test Projects apis", () => {
             "actualEndDate should not be present",
           );
           assert.isDefined(
-            res.body.data.getProjects[0].clientName,
-            "clientName should be present",
+            res.body.data.getProjects[0].client,
+            "client should be present",
           );
           done();
         });
@@ -723,7 +720,7 @@ describe("Test Projects apis", () => {
         updateProject(projectID: "TES", name: "Test Project100", scheduledStartDate: "${sub(
           new Date(),
           { days: 10 },
-        ).toJSON()}", projectOwner: "Test Owner123", clientName: "sakshi shreya") { ok, nModified }
+        ).toJSON()}", owner: "Test Owner123", client: "sakshi shreya") { ok, nModified }
       }`;
       chai
         .request(server)
@@ -746,7 +743,7 @@ describe("Test Projects apis", () => {
           assert.equal(res.body.data.updateProject.ok, 1);
           assert.equal(res.body.data.updateProject.nModified, 1);
 
-          const query = `{getProjects(projectID: "TES", type: inactive) {name, projectID, status, scheduledStartDate, updatedAt, updatedBy, projectOwner, clientName}}`;
+          const query = `{getProjects(projectID: "TES", type: inactive) {name, projectID, status, scheduledStartDate, updatedAt, updatedBy, owner, client}}`;
 
           chai
             .request(server)
@@ -772,17 +769,17 @@ describe("Test Projects apis", () => {
                 "Project status should be present",
               );
               assert.equal(res1.body.data.getProjects[0].status, "delayed");
-              
+
               assert.equal(
-                res1.body.data.getProjects[0].projectOwner,
+                res1.body.data.getProjects[0].owner,
                 "Test Owner123",
               );
               assert.isDefined(
-                res1.body.data.getProjects[0].clientName,
+                res1.body.data.getProjects[0].client,
                 "Client name should be present",
               );
               assert.equal(
-                res1.body.data.getProjects[0].clientName,
+                res1.body.data.getProjects[0].client,
                 "sakshi shreya",
               );
               assert.equal(res1.body.data.getProjects[0].updatedBy, "admin");
@@ -822,7 +819,7 @@ describe("Test Projects apis", () => {
           assert.equal(res.body.data.updateProject.ok, 1);
           assert.equal(res.body.data.updateProject.nModified, 1);
 
-          const query = `{getProjects(projectID: "TES") {projectID, status, actualStartDate, scheduledEndDate, actualEndDate, clientName}}`;
+          const query = `{getProjects(projectID: "TES") {projectID, status, actualStartDate, scheduledEndDate, actualEndDate, client}}`;
 
           chai
             .request(server)
@@ -862,11 +859,11 @@ describe("Test Projects apis", () => {
                 "Project actualEndDate should not be present",
               );
               assert.equal(
-                res1.body.data.getProjects[0].clientName,
+                res1.body.data.getProjects[0].client,
                 "sakshi shreya",
               );
               assert.isDefined(
-                res1.body.data.getProjects[0].clientName,
+                res1.body.data.getProjects[0].client,
                 "Project client name should be present",
               );
               done();
@@ -932,7 +929,7 @@ describe("Test Projects apis", () => {
           assert.equal(res.body.data.updateProject.ok, 1);
           assert.equal(res.body.data.updateProject.nModified, 1);
 
-          const query = `{getProjects(projectID: "TES", type: inactive) {projectID, status, actualStartDate, actualEndDate, clientName}}`;
+          const query = `{getProjects(projectID: "TES", type: inactive) {projectID, status, actualStartDate, actualEndDate, client}}`;
 
           chai
             .request(server)
@@ -993,7 +990,7 @@ describe("Test Projects apis", () => {
           assert.equal(res.body.data.updateProject.ok, 1);
           assert.equal(res.body.data.updateProject.nModified, 1);
 
-          const query = `{getProjects(projectID: "TES") {projectID, status, actualStartDate, actualEndDate, clientName}}`;
+          const query = `{getProjects(projectID: "TES") {projectID, status, actualStartDate, actualEndDate, client}}`;
 
           chai
             .request(server)
@@ -1023,13 +1020,13 @@ describe("Test Projects apis", () => {
               assert.isNull(
                 res1.body.data.getProjects[0].actualEndDate,
                 "Project actualEndDate should not be present",
-              );              
+              );
               assert.isDefined(
-                res1.body.data.getProjects[0].clientName,
+                res1.body.data.getProjects[0].client,
                 "Project client name should be present",
               );
               assert.equal(
-                res1.body.data.getProjects[0].clientName,
+                res1.body.data.getProjects[0].client,
                 "sakshi shreya",
               );
               done();
@@ -1062,7 +1059,7 @@ describe("Test Projects apis", () => {
           assert.equal(res.body.data.updateProject.ok, 1);
           assert.equal(res.body.data.updateProject.nModified, 1);
 
-          const query = `{getProjects(projectID: "TES", type: inactive) {projectID, status, actualStartDate, actualEndDate, clientName}}`;
+          const query = `{getProjects(projectID: "TES", type: inactive) {projectID, status, actualStartDate, actualEndDate, client}}`;
 
           chai
             .request(server)
@@ -1083,7 +1080,7 @@ describe("Test Projects apis", () => {
               assert.isDefined(
                 res1.body.data.getProjects[0].actualStartDate,
                 "Project actualStartDate should be present",
-              ); 
+              );
               assert.equal(
                 res1.body.data.getProjects[0].actualStartDate,
                 actualStartDate,
@@ -1099,11 +1096,11 @@ describe("Test Projects apis", () => {
                 1000,
               );
               assert.isDefined(
-                res1.body.data.getProjects[0].clientName,
+                res1.body.data.getProjects[0].client,
                 "Project client name should be present",
               );
               assert.equal(
-                res1.body.data.getProjects[0].clientName,
+                res1.body.data.getProjects[0].client,
                 "sakshi shreya",
               );
               done();
@@ -1132,7 +1129,7 @@ describe("Test Projects apis", () => {
           assert.equal(res.body.data.deleteProject.ok, 1);
           assert.equal(res.body.data.deleteProject.nModified, 1);
 
-          const query = `{getProjects(type: inactive) {projectID, status, actualStartDate, actualEndDate, clientName}}`;
+          const query = `{getProjects(type: inactive) {projectID, status, actualStartDate, actualEndDate, client}}`;
 
           chai
             .request(server)

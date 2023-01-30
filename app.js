@@ -13,6 +13,7 @@ import cors from "cors";
 import AppError from "./src/utils/appError.js";
 import { errorController } from "./src/controllers/errorController/index.js";
 import graphQLResolvers from "./src/resolvers/index.js";
+import projectRouter from "./src/routes/projectRoutes.js";
 
 // MERN stack
 // Mongo, Express, React, Node
@@ -22,33 +23,7 @@ const app = express();
 app.use(cors());
 
 // Add security headers
-app.use(
-  helmet({
-    contentSecurityPolicy: {
-      directives: {
-        defaultSrc: [
-          "'self'",
-          /** adds graphiql support over helmet's default CSP */
-          "'unsafe-inline'",
-        ],
-        baseUri: ["'self'"],
-        blockAllMixedContent: [],
-        fontSrc: ["'self'", "https:", "data:"],
-        frameAncestors: ["'self'"],
-        imgSrc: ["'self'", "data:"],
-        objectSrc: ["'none'"],
-        scriptSrc: [
-          "'self'",
-          /** adds graphiql support over helmet's default CSP */
-          "'unsafe-inline'",
-          /** adds graphiql support over helmet's default CSP */
-          "'unsafe-eval'",
-        ],
-        upgradeInsecureRequests: [],
-      },
-    },
-  }),
-);
+app.use(helmet());
 
 // Logging (only here because heroku has its own logging on prod)
 if (process.env.NODE_ENV === "development") {
@@ -92,6 +67,9 @@ app.use("/graphql", graphqlHTTP({ schema, graphiql: true }));
 app.get("/", (req, res) => {
   res.send("Hello World!");
 });
+
+// all routes here
+app.use("/api/projects", projectRouter);
 
 // 404 route
 app.all("*", (req, res, next) => {

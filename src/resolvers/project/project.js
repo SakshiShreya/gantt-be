@@ -117,7 +117,7 @@ const projectResolvers = {
   Mutation: {
     createProject: async (
       parent,
-      { name, desc, scheduledStartDate, address, projectOwner, clientName },
+      { name, desc, scheduledStartDate, address, owner, client },
     ) => {
       try {
         let projectID = name.replace(/\s/g, "").slice(0, 3).toUpperCase();
@@ -145,8 +145,8 @@ const projectResolvers = {
           createdBy: "admin",
           updatedBy: "admin",
           address,
-          projectOwner,
-          clientName
+          owner,
+          client
         });
       } catch (err) {
         return getGraphQLError(err);
@@ -162,8 +162,8 @@ const projectResolvers = {
         scheduledStartDate,
         status,
         address,
-        projectOwner,
-        clientName
+        owner,
+        client
       },
     ) => {
       try {
@@ -200,11 +200,11 @@ const projectResolvers = {
         if (address) {
           update.address = address;
         }
-        if (projectOwner) {
-          update.projectOwner = projectOwner;
+        if (owner) {
+          update.owner = owner;
         }
-        if(clientName){
-          update.clientName = clientName;
+        if(client){
+          update.client = client;
         }
 
         if (status === "started" && !project.actualStartDate) {

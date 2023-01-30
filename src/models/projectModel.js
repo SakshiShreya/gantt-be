@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import mongoosePaginate from "mongoose-paginate";
 import { addressSchema } from "./helper.js";
 
 const projectSchema = new mongoose.Schema({
@@ -35,13 +36,14 @@ const projectSchema = new mongoose.Schema({
     type: addressSchema,
     required: [true, "A project must have an address"],
   },
-  projectOwner: { type: String, required: true },
-  clientName: { type: String, required: true },
+  owner: { type: String, required: true },
+  client: { type: String, required: true },
   deleted: { type: Boolean, default: false, select: false },
 });
 
 // this adds createdAt and updatedAt fields to the schema
 projectSchema.set("timestamps", true);
+projectSchema.plugin(mongoosePaginate);
 
 const Project = mongoose.model("Project", projectSchema);
 
