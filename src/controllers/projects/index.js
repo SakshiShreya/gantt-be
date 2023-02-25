@@ -15,7 +15,7 @@ export const getAllProjects = catchAsync(async (req, res, next) => {
     page = 1,
   } = req.query;
   const filter = { deleted: false };
-  let orCondition = [];
+  const andCondition = [];
 
   if (type === "active") {
     filter.status = "started";
@@ -24,49 +24,45 @@ export const getAllProjects = catchAsync(async (req, res, next) => {
   }
 
   if (search) {
-    orCondition = [
-      ...orCondition,
-      { projectID: { $regex: search, $options: "i" } },
-      { name: { $regex: search, $options: "i" } },
-      { "address.city": { $regex: search, $options: "i" } },
-      { "address.state": { $regex: search, $options: "i" } },
-    ];
+    andCondition.push({
+      $or: [
+        { projectID: { $regex: search, $options: "i" } },
+        { name: { $regex: search, $options: "i" } },
+        { "address.city": { $regex: search, $options: "i" } },
+        { "address.state": { $regex: search, $options: "i" } },
+      ],
+    });
   }
 
-  let fromCondition = [];
-  let toCondition = [];
   if (fromDate) {
-    fromCondition = [
-      { actualStartDate: { $gte: new Date(fromDate) } },
-      {
-        $and: [
-          { actualStartDate: { $exists: false } },
-          { scheduledStartDate: { $gte: new Date(fromDate) } },
-        ],
-      },
-    ];
+    andCondition.push({
+      $or: [
+        { actualStartDate: { $gte: new Date(fromDate) } },
+        {
+          $and: [
+            { actualStartDate: { $exists: false } },
+            { scheduledStartDate: { $gte: new Date(fromDate) } },
+          ],
+        },
+      ],
+    });
   }
   if (toDate) {
-    toCondition = [
-      { actualEndDate: { $lte: new Date(toDate) } },
-      {
-        $and: [
-          { actualEndDate: { $exists: false } },
-          { scheduledEndDate: { $lte: new Date(toDate) } },
-        ],
-      },
-    ];
-  }
-  if (fromDate && toDate) {
-    filter.$and = [{ $or: fromCondition }, { $or: toCondition }];
-  } else if (fromDate) {
-    orCondition = [...orCondition, ...fromCondition];
-  } else if (toDate) {
-    orCondition = [...orCondition, ...toCondition];
+    andCondition.push({
+      $or: [
+        { actualStartDate: { $lte: new Date(toDate) } },
+        {
+          $and: [
+            { actualStartDate: { $exists: false } },
+            { scheduledStartDate: { $lte: new Date(toDate) } },
+          ],
+        },
+      ],
+    });
   }
 
-  if (orCondition.length) {
-    filter.$or = orCondition;
+  if (andCondition.length) {
+    filter.$and = andCondition;
   }
 
   const limit = +process.env.PAGINATION_LIMIT;
