@@ -76,6 +76,7 @@ export const getAllProjects = catchAsync(async (req, res, next) => {
     select,
   });
 
+  projects.docs = projects.docs.map((doc) => doc.toObject());
   projects.docs = projects.docs.map(getExpectedEndDate);
   projects.docs = projects.docs.map(getUpdatedStatus);
 
@@ -91,7 +92,9 @@ export const getProject = catchAsync(async (req, res, next) => {
       new AppError(`No project found with this ID: ${projectID}`, 404),
     );
   }
-  res.status(200).json({ data: getUpdatedStatus(getExpectedEndDate(project)) });
+  res
+    .status(200)
+    .json({ data: getUpdatedStatus(getExpectedEndDate(project.toObject())) });
 });
 
 export const createProject = catchAsync(async (req, res, next) => {
@@ -182,7 +185,7 @@ export const updateProject = catchAsync(async (req, res, next) => {
 
   if (status === "started" && !project.actualStartDate) {
     update.actualStartDate = new Date();
-    update.scheduledStartDate = add(new Date(), { months: 1 });
+    update.scheduledEndDate = add(new Date(), { months: 1 });
   } else if (status === "closed") {
     update.actualEndDate = new Date();
   }
