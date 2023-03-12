@@ -97,6 +97,11 @@ export const getProject = catchAsync(async (req, res, next) => {
 export const createProject = catchAsync(async (req, res, next) => {
   const { name, desc, scheduledStartDate, address, owner, client } = req.body;
 
+  // validations
+  if (!name) {
+    return next(new AppError("Project name is required", 400));
+  }
+
   let projectID = name.trim().replace(/\s/g, "").slice(0, 3).toUpperCase();
 
   // get the latest project that has the same projectID
@@ -114,21 +119,33 @@ export const createProject = catchAsync(async (req, res, next) => {
     projectID = `${projectID}${lastProjectIdNumber + 1}`;
   }
 
-  const project = await Project.create({
-    projectID,
-    name,
-    desc,
-    scheduledStartDate,
-    address,
-    owner,
-    client,
-    createdBy: "admin",
-    updatedBy: "admin",
-  });
+  try {
+    const project = await Project.create({
+      projectID,
+      name,
+      desc,
+      scheduledStartDate,
+      address,
+      owner,
+      client,
+      createdBy: "admin",
+      updatedBy: "admin",
+    });
 
-  res
-    .status(201)
-    .json({ data: project, message: "Project created successfully" });
+    res
+      .status(201)
+      .json({ data: project, message: "Project created successfully" });
+  } catch (error) {
+    if (error.name === "ValidationError") {
+      const errors = Object.entries(error.errors).reduce((acc, el) => {
+        acc[el[0]] = el[1].message;
+        return acc;
+      }, {});
+      return res.status(400).json({ message: error._message, errors });
+    }
+
+    next(error);
+  }
 });
 
 export const updateProject = catchAsync(async (req, res, next) => {
