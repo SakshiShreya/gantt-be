@@ -5,14 +5,9 @@ import rateLimit from "express-rate-limit";
 import ExpressMongoSanitize from "express-mongo-sanitize";
 import xss from "xss-clean";
 import hpp from "hpp";
-import { graphqlHTTP } from "express-graphql";
-import { makeExecutableSchema } from "@graphql-tools/schema";
-import { loadSchemaSync } from "@graphql-tools/load";
-import { GraphQLFileLoader } from "@graphql-tools/graphql-file-loader";
 import cors from "cors";
 import AppError from "./src/utils/appError.js";
 import { errorController } from "./src/controllers/errorController/index.js";
-import graphQLResolvers from "./src/resolvers/index.js";
 import projectRouter from "./src/routes/projectRoutes.js";
 import pinCodeToAddressRouter from "./src/routes/pinCodeToAddress.js";
 
@@ -57,14 +52,6 @@ app.use(
   }),
 );
 
-const schema = makeExecutableSchema({
-  typeDefs: loadSchemaSync("src/schemas/**/*.graphql", {
-    loaders: [new GraphQLFileLoader()],
-  }),
-  resolvers: graphQLResolvers,
-});
-
-app.use("/graphql", graphqlHTTP({ schema, graphiql: true }));
 app.get("/", (req, res) => {
   res.send("Hello World!");
 });
