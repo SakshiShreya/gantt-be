@@ -94,6 +94,8 @@ function sendErrorForProd(err, res) {
  */
 function handleMongoError(err) {
   let error = { ...err };
+  error.message = err.message;
+
   if (error.name === "CastError") {
     error = handleCastError(error);
   }
@@ -101,7 +103,7 @@ function handleMongoError(err) {
     error = handleDuplicateFields(error);
   }
   if (err.name === "ValidationError") {
-    error = handleValidationError(error);
+    error = handleValidationError(err);
   }
   if (err.name === "JsonWebTokenError") {
     error = handleJwtError();
@@ -114,14 +116,15 @@ function handleMongoError(err) {
 }
 
 /**
- * handles all errors even if missed by any controller
+ * handles all errors even if missed by any controller. \
+ * Please do not depend on this to handle all errors. Try to handle specific errors in controller itself.
  * @param {*} err error object
  * @param {Express.Request} req request object
  * @param {Express.Response} res response object
  * @param {Express.NextFunction} next next function
  */
 export function errorController(err, req, res, next) {
-  err.statusCode = err.statusCode || 500;
+  err.statusCode = err.statusCode || 400;
 
   if (process.env.NODE_ENV === "development") {
     sendErrorForDev(err, res);
